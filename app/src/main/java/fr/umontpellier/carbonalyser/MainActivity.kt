@@ -34,7 +34,7 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
     )
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true) @Preview
 @Composable
 fun GreetingPreview() {
     CarbonalyserTheme {
