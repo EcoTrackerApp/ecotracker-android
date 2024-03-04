@@ -37,7 +37,7 @@ class MainActivity : ComponentActivity() {
         Button(
             onClick = {
                 val appOps = getSystemService(APP_OPS_SERVICE) as AppOpsManager
-                val mode = appOps.checkOpNoThrow(
+                val mode = appOps.unsafeCheckOpNoThrow(
                     AppOpsManager.OPSTR_GET_USAGE_STATS,
                     Process.myUid(), packageName
                 )
