@@ -4,18 +4,7 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.lifecycle.lifecycleScope
-import fr.umontpellier.carbonalyser.android.Connectivity
-import fr.umontpellier.carbonalyser.android.hasUsageAccess
-import fr.umontpellier.carbonalyser.android.openUsageAccessSettings
-import fr.umontpellier.carbonalyser.android.packageNetworkStatsManager
+import fr.umontpellier.carbonalyser.ui.screens.MainScreen
 import fr.umontpellier.carbonalyser.ui.theme.CarbonalyserTheme
 import kotlinx.coroutines.launch
 import java.time.Instant
@@ -25,9 +14,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             CarbonalyserTheme {
-                Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
-                    DebugButton()
-                }
+                MainScreen { checkNetworkStats() }
             }
         }
     }
@@ -36,18 +23,42 @@ class MainActivity : ComponentActivity() {
     fun DebugButton() {
         Button(
             onClick = {
-                if (!hasUsageAccess) {
-                    openUsageAccessSettings()
+                val appOps = getSystemService(APP_OPS_SERVICE) as AppOpsManager
+                val mode = appOps.unsafeCheckOpNoThrow(
+                    AppOpsManager.OPSTR_GET_USAGE_STATS,
+                    Process.myUid(), packageName
+                )
+                if (mode != AppOpsManager.MODE_ALLOWED) {
+                    val intent = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)
+                    startActivity(intent)
+                    return@Button
                 }
+                val networkStatsManager = getSystemService(NETWORK_STATS_SERVICE) as NetworkStatsManager
+                val networkType = ConnectivityManager.TYPE_WIFI
+                val subscriberId = ""
 
-                lifecycleScope.launch {
-                    try {
-                        applicationContext.packageNetworkStatsManager
-                            .collect(Instant.ofEpochMilli(0L), Instant.now(), Connectivity.values())
-                            .forEach { println(it) }
-                    } catch (e: SecurityException) {
-                        Log.e("NetworkStats", "Permission Denied", e)
+                try {
+                    val networkStats: NetworkStats = networkStatsManager.querySummary(
+                        networkType,
+                        subscriberId,
+                        0,
+                        System.currentTimeMillis()
+                    )
+
+                    while (networkStats.hasNextBucket()) {
+                        val bucket = NetworkStats.Bucket()
+                        networkStats.getNextBucket(bucket)
+                        val uid = bucket.uid
+                        val rxBytes = bucket.rxBytes
+                        val txBytes = bucket.txBytes
+
+                        Log.i(
+                            "NetworkStats",
+                            "UID: $uid, RX Bytes: $rxBytes, TX Bytes: $txBytes"
+                        )
                     }
+                } catch (e: SecurityException) {
+                    Log.e("NetworkStats", "Permission Denied", e)
                 }
             },
         ) {
