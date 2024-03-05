@@ -1,5 +1,6 @@
 package fr.umontpellier.carbonalyser
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -38,20 +39,25 @@ class MainActivity : ComponentActivity() {
             onClick = {
                 if (!hasUsageAccess) {
                     openUsageAccessSettings()
-                }
-
-                lifecycleScope.launch {
-                    try {
-                        applicationContext.packageNetworkStatsManager
-                            .collect(Instant.ofEpochMilli(0L), Instant.now(), Connectivity.values())
-                            .forEach { println(it) }
-                    } catch (e: SecurityException) {
-                        Log.e("NetworkStats", "Permission Denied", e)
-                    }
+                }else{
+                    launchPrintDataActivity();
                 }
             },
         ) {
             Text("Debug Network")
+        }
+    }
+
+    private fun launchPrintDataActivity() {
+        val start = Instant.ofEpochMilli(0L)
+        val end = Instant.now()
+        lifecycleScope.launch {
+            val topApps =
+                applicationContext.packageNetworkStatsManager.collectTopAppsBySentBytes(start, end, 5).toTypedArray()
+
+            val intent = Intent(this@MainActivity, PrintDataActivity::class.java)
+            intent.putExtra("topAppsData", topApps)
+            startActivity(intent)
         }
     }
 

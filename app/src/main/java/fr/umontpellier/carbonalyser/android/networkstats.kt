@@ -137,7 +137,24 @@ class PackageNetworkStatsManager(private val context: Context) {
             )
         }
     }
+    /**
+    * Collects and returns the top applications by bytes sent.
+    *
+    * @param start Start time of the collection period.
+    * @param end End time of the collection period.
+    * @param topCount Number of top applications to return.
+    * @return List of formatted strings representing the top applications by bytes sent.
+    */
+    suspend fun collectTopAppsBySentBytes(start: Instant, end: Instant, topCount: Int): List<String> {
+        return collect(start, end, Connectivity.values())
+            .filter { it.packages.isNotEmpty() }
+            .sortedByDescending { it.bytesSent }
+            .take(topCount)
+            .map { "${it.packages.first().packageName}: ${it.bytesSent}" }
+    }
+
 }
+
 
 /**
  * Extension property to easily access [PackageNetworkStatsManager] from [Context].
