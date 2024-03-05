@@ -12,13 +12,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.lifecycleScope
+import fr.umontpellier.carbonalyser.android.Connectivity
 import fr.umontpellier.carbonalyser.android.hasUsageAccess
 import fr.umontpellier.carbonalyser.android.openUsageAccessSettings
 import fr.umontpellier.carbonalyser.android.packageNetworkStatsManager
 import fr.umontpellier.carbonalyser.ui.theme.CarbonalyserTheme
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.time.Instant
 
 class MainActivity : ComponentActivity() {
@@ -37,28 +36,22 @@ class MainActivity : ComponentActivity() {
     fun DebugButton() {
         Button(
             onClick = {
+                if (!hasUsageAccess) {
+                    openUsageAccessSettings()
+                }
+
                 lifecycleScope.launch {
-                    fetchNetworkStats()
+                    try {
+                        applicationContext.packageNetworkStatsManager
+                            .collect(Instant.ofEpochMilli(0L), Instant.now(), Connectivity.values())
+                            .forEach { println(it) }
+                    } catch (e: SecurityException) {
+                        Log.e("NetworkStats", "Permission Denied", e)
+                    }
                 }
             },
         ) {
             Text("Debug Network")
-        }
-    }
-
-    private suspend fun fetchNetworkStats() {
-        withContext(Dispatchers.IO) {
-            if (!hasUsageAccess) {
-                openUsageAccessSettings()
-            }
-
-            try {
-                applicationContext.packageNetworkStatsManager
-                    .collectWifi(Instant.ofEpochMilli(0L), Instant.now())
-                    .forEach { println(it) }
-            } catch (e: SecurityException) {
-                Log.e("NetworkStats", "Permission Denied", e)
-            }
         }
     }
 
