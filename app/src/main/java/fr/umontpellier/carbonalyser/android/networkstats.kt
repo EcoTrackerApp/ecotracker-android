@@ -8,12 +8,20 @@ import android.content.pm.PackageManager
 import android.net.ConnectivityManager
 import java.time.Instant
 
+
+@Suppress("DEPRECATION")
+enum class Connectivity(val type: Int) {
+    WIFI(ConnectivityManager.TYPE_WIFI),
+    MOBILE(ConnectivityManager.TYPE_MOBILE)
+}
+
 /**
  * Represents network statistics for a package (app) within a specified time frame.
  * @property packages List of [PackageInfo] objects representing packages.
  * @property networkBucket [NetworkStats.Bucket] containing network statistics.
  */
 class PackageNetworkStats(
+    val connectivity: Connectivity,
     val packages: List<PackageInfo>,
     val networkBucket: NetworkStats.Bucket
 ) {
@@ -60,6 +68,7 @@ class PackageNetworkStats(
         return "PackageNetworkStats(" +
                 "uid=${networkBucket.uid}, " +
                 "packages=${packages.map { it.packageName }}, " +
+                "connectivity=${connectivity}, " +
                 "start=${start.formatted}, " +
                 "end=${end.formatted}, " +
                 "bytesSent=$bytesSent, " +
@@ -82,24 +91,11 @@ class PackageNetworkStatsManager(private val context: Context) {
      * @param end End time of the collection period.
      * @return List of [PackageNetworkStats] objects containing network statistics for each package.
      */
-    @Suppress("DEPRECATION")
-    suspend fun collectWifi(start: Instant, end: Instant): List<PackageNetworkStats> {
+    suspend fun collect(start: Instant, end: Instant, connectivities: Array<Connectivity>): List<PackageNetworkStats> {
         val buffer = mutableListOf<PackageNetworkStats>()
-        collect(start, end, ConnectivityManager.TYPE_WIFI, buffer)
-        return buffer
-    }
-
-    /**
-     * Collects network statistics for packages within the specified time frame.
-     *
-     * @param start Start time of the collection period.
-     * @param end End time of the collection period.
-     * @return List of [PackageNetworkStats] objects containing network statistics for each package.
-     */
-    @Suppress("DEPRECATION")
-    suspend fun collectMobile(start: Instant, end: Instant): List<PackageNetworkStats> {
-        val buffer = mutableListOf<PackageNetworkStats>()
-        collect(start, end, ConnectivityManager.TYPE_MOBILE, buffer)
+        connectivities.forEach {
+            collect(start, end, it, buffer)
+        }
         return buffer
     }
 
@@ -115,13 +111,13 @@ class PackageNetworkStatsManager(private val context: Context) {
     private suspend fun collect(
         start: Instant,
         end: Instant,
-        connectivity: Int,
+        connectivity: Connectivity,
         buffer: MutableList<PackageNetworkStats>
     ) {
         val networkStatsManager = context.getSystemService(NetworkStatsManager::class.java)
         val wifiNetworkSummary =
             networkStatsManager.querySummary(
-                connectivity,
+                connectivity.type,
                 null,
                 start.toEpochMilli(),
                 end.toEpochMilli()
@@ -132,6 +128,7 @@ class PackageNetworkStatsManager(private val context: Context) {
                 continue
             buffer.add(
                 PackageNetworkStats(
+                    connectivity,
                     context.packageManager.getPackagesForUid(bucket.uid)
                         ?.map { context.packageManager.getPackageInfo(it, PackageManager.GET_META_DATA) }
                         .orEmpty(),
