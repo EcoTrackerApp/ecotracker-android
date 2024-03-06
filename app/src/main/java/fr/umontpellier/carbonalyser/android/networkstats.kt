@@ -150,9 +150,21 @@ class PackageNetworkStatsManager(private val context: Context) {
             .filter { it.packages.isNotEmpty() }
             .sortedByDescending { it.bytesSent }
             .take(topCount)
-            .map { "${it.packages.first().packageName}: ${it.bytesSent}" }
+            .map {
+                val packageName = it.packages.first().packageName
+                formatAppData(packageName, it.bytesSent)
+            }
     }
 
+
+    fun formatAppData(appName: String, bytes: Long): String {
+        val formattedName = appName.replace("com.", "")
+            .replace("android.", "")
+            .replace("android", "")
+            .replace("package.", "")
+        val bytesToMegabytes = bytes / (1024.0 * 1024.0)
+        return "$formattedName: ${String.format("%.2f", bytesToMegabytes)} Mo"
+    }
 }
 
 
