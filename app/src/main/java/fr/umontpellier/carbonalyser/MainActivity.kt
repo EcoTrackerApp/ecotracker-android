@@ -49,14 +49,18 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun launchPrintDataActivity() {
-        val start = Instant.ofEpochMilli(0L)
-        val end = Instant.now()
+        val now = Instant.now()
+        val oneMinuteAgo = now.minusSeconds(60)
         lifecycleScope.launch {
-            val topApps =
-                applicationContext.packageNetworkStatsManager.collectTopAppsBySentBytes(start, end, 5).toTypedArray()
+            val topAppsOverall = applicationContext.packageNetworkStatsManager
+                .collectTopAppsBySentBytes(Instant.ofEpochMilli(0L), now, 5).toTypedArray()
+
+            val topAppsLastMinute = applicationContext.packageNetworkStatsManager
+                .collectTopAppsBySentBytes(oneMinuteAgo, now, 5).toTypedArray()
 
             val intent = Intent(this@MainActivity, PrintDataActivity::class.java)
-            intent.putExtra("topAppsData", topApps)
+            intent.putExtra("topAppsData", topAppsOverall)
+            intent.putExtra("topAppsLastMinute", topAppsLastMinute)
             startActivity(intent)
         }
     }
