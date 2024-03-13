@@ -1,3 +1,5 @@
 package fr.umontpellier.carbonalyser.data.model
 
-data class EmissionData(val name: String, val co2Emissions: Double)
+import java.util.Date
+
+data class EmissionData(val date: Date, val co2Emissions: Double)
