@@ -1,5 +1,6 @@
 package fr.umontpellier.carbonalyser.ui.components.mainTiles
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -25,7 +26,6 @@ fun EmissionSummaryTile(globalEmission: Double, lastVisitIncrease: Double) {
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 25.dp, bottom = 25.dp, start = 16.dp, end = 16.dp),
-            elevation = CardDefaults.cardElevation(4.dp),
             colors = CardDefaults.cardColors(containerColor = Color(blueColor)),
         ) {
             Box(
