@@ -1,5 +1,6 @@
 package fr.umontpellier.carbonalyser.ui.components.mainTiles
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.runtime.Composable
@@ -30,7 +31,7 @@ fun DynamicTile(
     CarbonalyserTheme {
         Card(
             colors = CardDefaults.cardColors(containerColor = Color.White),
-            elevation = CardDefaults.cardElevation(4.dp),
+            border = BorderStroke(2.dp, Color.LightGray),
             modifier = Modifier
                 .padding(16.dp)
                 .size(150.dp)
