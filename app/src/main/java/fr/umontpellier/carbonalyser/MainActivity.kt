@@ -3,7 +3,6 @@ package fr.umontpellier.carbonalyser
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import fr.umontpellier.carbonalyser.ui.screens.MainScreen
 import fr.umontpellier.carbonalyser.ui.theme.CarbonalyserTheme
 
 class MainActivity : ComponentActivity() {
@@ -11,7 +10,6 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             CarbonalyserTheme {
-                MainScreen()
             }
         }
     }

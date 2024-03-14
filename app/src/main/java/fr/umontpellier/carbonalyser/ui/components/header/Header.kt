@@ -31,10 +31,9 @@ fun Header() {
             modifier = Modifier
                 .fillMaxWidth()
                 .background(Color.White)
-                .padding(16.dp)
                 .fillMaxWidth()
                 .wrapContentHeight(Alignment.CenterVertically)
-                .padding(horizontal = 16.dp),
+                .padding(top = 10.dp, start = 16.dp, end = 16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
             horizontalAlignment = Alignment.Start
         ) {
