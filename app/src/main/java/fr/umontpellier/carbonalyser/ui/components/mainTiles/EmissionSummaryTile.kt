@@ -30,7 +30,7 @@ fun EmissionSummaryTile(globalEmission: Double, lastVisitIncrease: Double) {
         ) {
             Box(
                 modifier = Modifier
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                    .padding(horizontal = 16.dp, vertical = 16.dp)
             ) {
                 Column(
                     modifier = Modifier.fillMaxWidth(),
@@ -61,13 +61,13 @@ fun EmissionSummaryTile(globalEmission: Double, lastVisitIncrease: Double) {
                         Text(
                             text = "${globalEmission} kgCO2e",
                             color = Color.White,
-                            fontSize = 26.sp
+                            fontSize = 32.sp
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
                             text = "+ $lastVisitIncrease%",
                             color = Color(fontBlueColor),
-                            fontSize = 12.sp
+                            fontSize = 15.sp
                         )
                     }
                 }

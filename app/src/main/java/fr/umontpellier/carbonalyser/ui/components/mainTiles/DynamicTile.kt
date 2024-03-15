@@ -2,7 +2,6 @@ package fr.umontpellier.carbonalyser.ui.components.mainTiles
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -38,38 +37,34 @@ fun DynamicTile(
         ) {
             Box(
                 modifier = Modifier
-                    .aspectRatio(1f) // Garde la hauteur égale à la largeur
+                    .aspectRatio(1f)
                     .padding(16.dp)
             ) {
-                // Logo en haut à gauche
                 Image(
                     painter = painterResource(id = logoResId),
                     contentDescription = "Logo",
                     modifier = Modifier
-                        .size(32.dp)  // Taille du Logo
-                        .align(Alignment.TopStart) // Alignement en haut à gauche
+                        .size(32.dp)
+                        .align(Alignment.TopStart)
                 )
 
-                // Premier texte dynamique
                 Text(
                     text = firstText,
                     fontSize = 20.sp,
                     color = Color.Black,
                     fontFamily = FontFamily(Font(R.font.aleo_bold)),
                     modifier = Modifier
-                        .padding(top = 60.dp, start = 0.dp) // Ajoute une marge au-dessus et à gauche
+                        .padding(top = 60.dp, start = 0.dp)
                 )
 
-                // Deuxième texte dynamique plus petit
                 Text(
                     text = secondText,
                     fontSize = 11.sp,
                     color = Color.Gray,
                     modifier = Modifier
-                        .padding(top = 90.dp, start = 0.dp) // Ajoute une marge au-dessus et à gauche
+                        .padding(top = 90.dp, start = 0.dp)
                 )
 
-                // Image transparente positionnée de manière absolue
                 Box(
                     modifier = Modifier
                         .size(200.dp) // Taille de l'image
