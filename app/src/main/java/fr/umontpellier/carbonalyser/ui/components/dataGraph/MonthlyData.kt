@@ -1,6 +1,7 @@
 package fr.umontpellier.carbonalyser.ui.components.dataGraph
 
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -13,6 +14,7 @@ import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.components.XAxis
@@ -37,8 +39,8 @@ fun generateRandomDataForYear(year: Int): Pair<Map<LocalDate, Float>, Map<LocalD
 
     var currentDate = startDate
     while (currentDate <= endDate) {
-        val randomSent = Random.nextFloat() * 3
-        val randomReceived = Random.nextFloat() * 10
+        val randomSent = Random.nextFloat() * (2 * Random.nextInt(1, currentDate.month.value + 1))
+        val randomReceived = Random.nextFloat() * (4 * Random.nextInt(1, currentDate.month.value + 1))
 
         dataSent[currentDate] = randomSent
         dataReceived[currentDate] = randomReceived
@@ -52,8 +54,8 @@ fun generateRandomDataForYear(year: Int): Pair<Map<LocalDate, Float>, Map<LocalD
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MonthlyData(dataSent: Map<LocalDate, Float>, dataReceived: Map<LocalDate, Float>) {
-    val selectedOption = remember { mutableStateOf("Donnée envoyé") }
-    val options = listOf("Donnée envoyé", "Données reçu", "Donnée totale")
+    val selectedOption = remember { mutableStateOf("Données totales") }
+    val options = listOf("Données envoyées", "Données reçus", "Données totales")
     val expanded = remember { mutableStateOf(false) }
 
     val groupedDataSent = sortDataByMonth(dataSent)
@@ -66,82 +68,121 @@ fun MonthlyData(dataSent: Map<LocalDate, Float>, dataReceived: Map<LocalDate, Fl
             colors = CardDefaults.cardColors(Color.White),
             modifier = Modifier
                 .fillMaxWidth()
-                .aspectRatio(0.8f, true)
+                .aspectRatio(0.8f)
                 .padding(16.dp)
         ) {
-            Box {
-                AndroidView(
-                    factory = { context ->
-                        BarChart(context).apply {
-                            chart.value = this
-                            setChart(groupedDataSent, groupedDataReceived)
-                        }
-                    },
-                    modifier = Modifier.fillMaxSize()
-                        .padding(16.dp)
-                )
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp)
+            ) {
                 Box(
                     modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(16.dp)
+                        .fillMaxWidth()
+                        .background(Color.White)
+                        .padding(10.dp)
                 ) {
-                    ExposedDropdownMenuBox(
-                        expanded = expanded.value,
-                        onExpandedChange = { expanded.value = !expanded.value }
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        CustomTextField(
-                            value = selectedOption.value,
-                            onValueChange = {},
-                            modifier = Modifier.menuAnchor(),
-                            isMenuExpanded = expanded.value
+                        Text(
+                            text = "Consommation (Gb)",
+                            fontSize = 16.sp,
+                            modifier = Modifier.weight(1f)
                         )
 
-                        CustomDropdownMenu(
+                        ExposedDropdownMenuBox(
                             expanded = expanded.value,
-                            onDismissRequest = { expanded.value = false },
-                            options = options,
-                            onOptionSelected = { option ->
-                                selectedOption.value = option
-                                expanded.value = false
-                                when (option) {
-                                    "Donnée envoyé" -> chart.value?.setChart(groupedDataSent, emptyMap())
-                                    "Données reçu" -> chart.value?.setChart(emptyMap(), groupedDataReceived)
-                                    "Donnée totale" -> chart.value?.setChart(groupedDataSent, groupedDataReceived)
-                                }
-                            },
-                            modifier = Modifier.align(Alignment.TopEnd)
-                        )
+                            onExpandedChange = { expanded.value = !expanded.value }
+                        ) {
+                            CustomTextField(
+                                value = selectedOption.value,
+                                modifier = Modifier.menuAnchor(),
+                                isMenuExpanded = expanded.value
+                            )
+
+                            CustomDropdownMenu(
+                                expanded = expanded.value,
+                                onDismissRequest = { expanded.value = false },
+                                options = options,
+                                onOptionSelected = { option ->
+                                    selectedOption.value = option
+                                    expanded.value = false
+                                    when (option) {
+                                        "Donnée envoyé" -> chart.value?.setChart(groupedDataSent, emptyMap())
+                                        "Données reçu" -> chart.value?.setChart(emptyMap(), groupedDataReceived)
+                                        "Donnée totale" -> chart.value?.setChart(groupedDataSent, groupedDataReceived)
+                                    }
+                                },
+                            )
+                        }
                     }
+                }
+
+
+                // Graphique
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color.White)
+                ) {
+                    AndroidView(
+                        factory = { context ->
+                            BarChart(context).apply {
+                                chart.value = this
+                                setChart(groupedDataSent, groupedDataReceived)
+                                legend.isEnabled = false
+                            }
+                        },
+                        modifier = Modifier.fillMaxSize()
+                    )
                 }
             }
         }
     }
 }
 
+
 fun BarChart.setChart(dataSent: Map<Month, Float>, dataReceived: Map<Month, Float>) {
-    val barEntriesSent = dataSent.entries.toList().mapIndexed { index, (_, value) ->
-        BarEntry(index.toFloat() - 0.2f, value)
-    }
-    val barEntriesReceived = dataReceived.entries.toList().mapIndexed { index, (_, value) ->
-        BarEntry(index.toFloat() + 0.2f, value)
+    val barEntry: BarDataSet
+
+    if (dataSent.isNotEmpty() && dataReceived.isNotEmpty()) {
+        val mergedData = dataSent.toMutableMap()
+        dataReceived.forEach { (date, value) ->
+            mergedData[date] = mergedData.getOrDefault(date, 0f) + value
+        }
+
+        val barEntriesTotal = mergedData.entries.toList().mapIndexed { index, (_, value) ->
+            BarEntry(index.toFloat(), value)
+        }
+        val maxSentAndReceived = barEntriesTotal.maxOfOrNull { it.y } ?: 0f
+        barEntry = BarDataSet(barEntriesTotal, "Données envoyées (GB) et reçues (GB)").apply {
+            colors = barEntriesTotal.map { getColorBasedOnData(it.y, maxSentAndReceived).toArgb() }
+        }
+    } else if (dataSent.isNotEmpty()) {
+        val barEntriesSent = dataSent.entries.toList().mapIndexed { index, (_, value) ->
+            BarEntry(index.toFloat(), value)
+        }
+        val maxSent = barEntriesSent.maxOfOrNull { it.y } ?: 0f
+        barEntry = BarDataSet(barEntriesSent, "Données envoyées (GB)").apply {
+            colors = barEntriesSent.map { getColorBasedOnData(it.y, maxSent).toArgb() }
+        }
+    } else {
+        val barEntriesReceived = dataReceived.entries.toList().mapIndexed { index, (_, value) ->
+            BarEntry(index.toFloat(), value)
+        }
+        val maxReceived = barEntriesReceived.maxOfOrNull { it.y } ?: 0f
+        barEntry = BarDataSet(barEntriesReceived, "Données reçues (GB)").apply {
+            colors = barEntriesReceived.map { getColorBasedOnData(it.y, maxReceived).toArgb() }
+        }
     }
 
-    val maxSent = barEntriesSent.maxOfOrNull { it.y } ?: 0f
-    val maxReceived = barEntriesReceived.maxOfOrNull { it.y } ?: 0f
-
-    val dataSetSent = BarDataSet(barEntriesSent, "Données envoyées (GB)").apply {
-        colors = barEntriesSent.map { getColorBasedOnData(it.y, maxSent).toArgb() }
-    }
-
-    val dataSetReceived = BarDataSet(barEntriesReceived, "Données reçues (GB)").apply {
-        colors = barEntriesReceived.map { getColorBasedOnData(it.y, maxReceived).toArgb() }
-    }
-
-    val barData = BarData(dataSetSent, dataSetReceived)
-    barData.barWidth = 0.3f
+    val barData = BarData(barEntry)
+    barData.barWidth = 0.4f
 
     data = barData
-
+    barEntry.valueTextSize = 12f
     description.isEnabled = false
 
     val xAxis: XAxis = xAxis
