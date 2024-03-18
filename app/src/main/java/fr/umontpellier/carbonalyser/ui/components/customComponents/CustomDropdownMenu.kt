@@ -11,9 +11,11 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 @Composable
 fun CustomDropdownMenu(
@@ -24,7 +26,7 @@ fun CustomDropdownMenu(
     modifier: Modifier = Modifier
 ) {
     Box(
-        modifier = modifier
+        modifier = modifier.scale(0.8f) // Ajoutez le modificateur scale ici
     ) {
         DropdownMenu(
             expanded = expanded,
@@ -35,14 +37,15 @@ fun CustomDropdownMenu(
         ) {
             options.forEach { option ->
                 DropdownMenuItem(
-                    text = { Text(text = option) },
+                    text = { Text(text = option,
+                        fontSize = 12.sp) },
                     onClick = {
                         onOptionSelected(option)
                         onDismissRequest()
                     },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                        .padding(horizontal = 10.dp, vertical = 5.dp)
                 )
             }
         }
