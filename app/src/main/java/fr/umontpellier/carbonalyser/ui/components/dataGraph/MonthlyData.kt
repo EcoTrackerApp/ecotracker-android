@@ -14,13 +14,14 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.compose.ui.zIndex
 import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.components.YAxis
 import com.github.mikephil.charting.data.BarData
 import com.github.mikephil.charting.data.BarDataSet
 import com.github.mikephil.charting.data.BarEntry
+import fr.umontpellier.carbonalyser.ui.components.customComponents.CustomDropdownMenu
+import fr.umontpellier.carbonalyser.ui.components.customComponents.CustomTextField
 import fr.umontpellier.carbonalyser.ui.theme.CarbonalyserTheme
 import fr.umontpellier.carbonalyser.util.MonthAxisValueFormatter
 import java.time.LocalDate
@@ -48,6 +49,7 @@ fun generateRandomDataForYear(year: Int): Pair<Map<LocalDate, Float>, Map<LocalD
     return Pair(dataSent, dataReceived)
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MonthlyData(dataSent: Map<LocalDate, Float>, dataReceived: Map<LocalDate, Float>) {
     val selectedOption = remember { mutableStateOf("Donnée envoyé") }
@@ -83,30 +85,32 @@ fun MonthlyData(dataSent: Map<LocalDate, Float>, dataReceived: Map<LocalDate, Fl
                         .align(Alignment.TopEnd)
                         .padding(16.dp)
                 ) {
-                    Button(
-                        onClick = { expanded.value = !expanded.value },
-                        modifier = Modifier.zIndex(1f)
-                    ) {
-                        Text(text = selectedOption.value)
-                    }
-                    DropdownMenu(
+                    ExposedDropdownMenuBox(
                         expanded = expanded.value,
-                        onDismissRequest = { expanded.value = false }
+                        onExpandedChange = { expanded.value = !expanded.value }
                     ) {
-                        options.forEach { option ->
-                            DropdownMenuItem(
-                                text = { Text(text = option) },
-                                onClick = {
-                                    selectedOption.value = option
-                                    expanded.value = false
-                                    when (option) {
-                                        "Donnée envoyé" -> chart.value?.setChart(groupedDataSent, emptyMap())
-                                        "Données reçu" -> chart.value?.setChart(emptyMap(), groupedDataReceived)
-                                        "Donnée totale" -> chart.value?.setChart(groupedDataSent, groupedDataReceived)
-                                    }
+                        CustomTextField(
+                            value = selectedOption.value,
+                            onValueChange = {},
+                            modifier = Modifier.menuAnchor(),
+                            isMenuExpanded = expanded.value
+                        )
+
+                        CustomDropdownMenu(
+                            expanded = expanded.value,
+                            onDismissRequest = { expanded.value = false },
+                            options = options,
+                            onOptionSelected = { option ->
+                                selectedOption.value = option
+                                expanded.value = false
+                                when (option) {
+                                    "Donnée envoyé" -> chart.value?.setChart(groupedDataSent, emptyMap())
+                                    "Données reçu" -> chart.value?.setChart(emptyMap(), groupedDataReceived)
+                                    "Donnée totale" -> chart.value?.setChart(groupedDataSent, groupedDataReceived)
                                 }
-                            )
-                        }
+                            },
+                            modifier = Modifier.align(Alignment.TopEnd)
+                        )
                     }
                 }
             }
