@@ -62,6 +62,7 @@ fun MonthlyData(dataSent: Map<LocalDate, Float>, dataReceived: Map<LocalDate, Fl
     val groupedDataReceived = sortDataByMonth(dataReceived)
 
     val chart = remember { mutableStateOf<BarChart?>(null) }
+    val animationDuration = 1500
 
     CarbonalyserTheme {
         Card(
@@ -110,9 +111,18 @@ fun MonthlyData(dataSent: Map<LocalDate, Float>, dataReceived: Map<LocalDate, Fl
                                     selectedOption.value = option
                                     expanded.value = false
                                     when (option) {
-                                        "Donnée envoyé" -> chart.value?.setChart(groupedDataSent, emptyMap())
-                                        "Données reçu" -> chart.value?.setChart(emptyMap(), groupedDataReceived)
-                                        "Donnée totale" -> chart.value?.setChart(groupedDataSent, groupedDataReceived)
+                                        "Données envoyées" -> {
+                                            chart.value?.setChart(groupedDataSent, emptyMap())
+                                            chart.value?.animateXY(animationDuration, animationDuration)
+                                        }
+                                        "Données reçus" -> {
+                                            chart.value?.setChart(emptyMap(), groupedDataReceived)
+                                            chart.value?.animateXY(animationDuration, animationDuration)
+                                        }
+                                        "Données totales" -> {
+                                            chart.value?.setChart(groupedDataSent, groupedDataReceived)
+                                            chart.value?.animateXY(animationDuration, animationDuration)
+                                        }
                                     }
                                 },
                             )
@@ -133,6 +143,9 @@ fun MonthlyData(dataSent: Map<LocalDate, Float>, dataReceived: Map<LocalDate, Fl
                                 chart.value = this
                                 setChart(groupedDataSent, groupedDataReceived)
                                 legend.isEnabled = false
+                                getAxis(YAxis.AxisDependency.LEFT).textSize = 12f
+                                animateXY(animationDuration, animationDuration)
+                                xAxis.setDrawGridLines(false)
                             }
                         },
                         modifier = Modifier.fillMaxSize()
@@ -201,11 +214,10 @@ fun BarChart.setChart(dataSent: Map<Month, Float>, dataReceived: Map<Month, Floa
 }
 
 fun sortDataByMonth(data: Map<LocalDate, Float>): Map<Month, Float> {
-    val sortedData = sortedMapOf<Month, Float>()
+    val sortedData = Month.values().associateWith { 0f }.toMutableMap()
     data.forEach { (date, value) ->
         val month = date.month
-        val currentValue = sortedData[month] ?: 0f
-        sortedData[month] = currentValue + value
+        sortedData[month] = sortedData[month]!! + value
     }
     return sortedData
 }
