@@ -72,7 +72,7 @@ class PackageNetworkStats(
                 "start=${start.formatted}, " +
                 "end=${end.formatted}, " +
                 "bytesSent=$bytesSent, " +
-                "bytesReceived=bytesReceived, " +
+                "bytesReceived=$bytesReceived, " +
                 "packetsSent=$packetsSent, " +
                 "packetsReceived=$packetsReceived)"
     }
@@ -107,7 +107,7 @@ class PackageNetworkStatsManager(private val context: Context) {
      * @param connectivity Type of network connectivity (e.g., [ConnectivityManager.TYPE_WIFI]).
      * @param buffer Mutable list to store collected [PackageNetworkStats] objects.
      */
-    @Suppress("RedundantSuspendModifier")
+    @Suppress("RedundantSuspendModifier", "DEPRECATION")
     private suspend fun collect(
         start: Instant,
         end: Instant,
