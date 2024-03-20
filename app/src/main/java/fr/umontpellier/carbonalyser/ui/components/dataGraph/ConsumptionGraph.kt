@@ -24,36 +24,17 @@ import com.github.mikephil.charting.data.BarDataSet
 import com.github.mikephil.charting.data.BarEntry
 import fr.umontpellier.carbonalyser.ui.components.customComponents.CustomDropdownMenu
 import fr.umontpellier.carbonalyser.ui.components.customComponents.CustomTextField
-import fr.umontpellier.carbonalyser.ui.theme.CarbonalyserTheme
+import fr.umontpellier.carbonalyser.util.GenerateRandomData
+import fr.umontpellier.carbonalyser.util.GenerateRandomData.Companion.generateRandomDataForYear
 import fr.umontpellier.carbonalyser.util.MonthAxisValueFormatter
 import java.time.LocalDate
 import java.time.Month
 import kotlin.random.Random
 
-fun generateRandomDataForYear(year: Int): Pair<Map<LocalDate, Float>, Map<LocalDate, Float>> {
-    val startDate = LocalDate.of(year, 1, 1)
-    val endDate = LocalDate.of(year, 12, 31)
-
-    val dataSent = mutableMapOf<LocalDate, Float>()
-    val dataReceived = mutableMapOf<LocalDate, Float>()
-
-    var currentDate = startDate
-    while (currentDate <= endDate) {
-        val randomSent = Random.nextFloat() * (2 * Random.nextInt(1, currentDate.month.value + 1))
-        val randomReceived = Random.nextFloat() * (4 * Random.nextInt(1, currentDate.month.value + 1))
-
-        dataSent[currentDate] = randomSent
-        dataReceived[currentDate] = randomReceived
-
-        currentDate = currentDate.plusDays(1)
-    }
-
-    return Pair(dataSent, dataReceived)
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MonthlyData(dataSent: Map<LocalDate, Float>, dataReceived: Map<LocalDate, Float>) {
+fun ConsumptionGraph(dataSent: Map<LocalDate, Float>, dataReceived: Map<LocalDate, Float>) {
     val selectedOption = remember { mutableStateOf("Données totales") }
     val options = listOf("Données envoyées", "Données reçus", "Données totales")
     val expanded = remember { mutableStateOf(false) }
@@ -64,93 +45,91 @@ fun MonthlyData(dataSent: Map<LocalDate, Float>, dataReceived: Map<LocalDate, Fl
     val chart = remember { mutableStateOf<BarChart?>(null) }
     val animationDuration = 1500
 
-    CarbonalyserTheme {
-        Card(
-            colors = CardDefaults.cardColors(Color.White),
+    Card(
+        colors = CardDefaults.cardColors(Color.White),
+        modifier = Modifier
+            .fillMaxWidth()
+            .aspectRatio(0.8f)
+            .padding(16.dp)
+    ) {
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .aspectRatio(0.8f)
+                .fillMaxSize()
                 .padding(16.dp)
         ) {
-            Column(
+            Box(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp)
+                    .fillMaxWidth()
+                    .background(Color.White)
+                    .padding(10.dp)
             ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(Color.White)
-                        .padding(10.dp)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
+                    Text(
+                        text = "Consommation (Gb)",
+                        fontSize = 16.sp,
+                        modifier = Modifier.weight(1f)
+                    )
+
+                    ExposedDropdownMenuBox(
+                        expanded = expanded.value,
+                        onExpandedChange = { expanded.value = !expanded.value }
                     ) {
-                        Text(
-                            text = "Consommation (Gb)",
-                            fontSize = 16.sp,
-                            modifier = Modifier.weight(1f)
+                        CustomTextField(
+                            value = selectedOption.value,
+                            modifier = Modifier.menuAnchor(),
+                            isMenuExpanded = expanded.value
                         )
 
-                        ExposedDropdownMenuBox(
+                        CustomDropdownMenu(
                             expanded = expanded.value,
-                            onExpandedChange = { expanded.value = !expanded.value }
-                        ) {
-                            CustomTextField(
-                                value = selectedOption.value,
-                                modifier = Modifier.menuAnchor(),
-                                isMenuExpanded = expanded.value
-                            )
-
-                            CustomDropdownMenu(
-                                expanded = expanded.value,
-                                onDismissRequest = { expanded.value = false },
-                                options = options,
-                                onOptionSelected = { option ->
-                                    selectedOption.value = option
-                                    expanded.value = false
-                                    when (option) {
-                                        "Données envoyées" -> {
-                                            chart.value?.setChart(groupedDataSent, emptyMap())
-                                            chart.value?.animateXY(animationDuration, animationDuration)
-                                        }
-                                        "Données reçus" -> {
-                                            chart.value?.setChart(emptyMap(), groupedDataReceived)
-                                            chart.value?.animateXY(animationDuration, animationDuration)
-                                        }
-                                        "Données totales" -> {
-                                            chart.value?.setChart(groupedDataSent, groupedDataReceived)
-                                            chart.value?.animateXY(animationDuration, animationDuration)
-                                        }
+                            onDismissRequest = { expanded.value = false },
+                            options = options,
+                            onOptionSelected = { option ->
+                                selectedOption.value = option
+                                expanded.value = false
+                                when (option) {
+                                    "Données envoyées" -> {
+                                        chart.value?.setChart(groupedDataSent, emptyMap())
+                                        chart.value?.animateXY(animationDuration, animationDuration)
                                     }
-                                },
-                            )
-                        }
+
+                                    "Données reçus" -> {
+                                        chart.value?.setChart(emptyMap(), groupedDataReceived)
+                                        chart.value?.animateXY(animationDuration, animationDuration)
+                                    }
+
+                                    "Données totales" -> {
+                                        chart.value?.setChart(groupedDataSent, groupedDataReceived)
+                                        chart.value?.animateXY(animationDuration, animationDuration)
+                                    }
+                                }
+                            },
+                        )
                     }
                 }
+            }
 
-
-                // Graphique
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(Color.White)
-                ) {
-                    AndroidView(
-                        factory = { context ->
-                            BarChart(context).apply {
-                                chart.value = this
-                                setChart(groupedDataSent, groupedDataReceived)
-                                legend.isEnabled = false
-                                getAxis(YAxis.AxisDependency.LEFT).textSize = 12f
-                                animateXY(animationDuration, animationDuration)
-                                xAxis.setDrawGridLines(false)
-                            }
-                        },
-                        modifier = Modifier.fillMaxSize()
-                    )
-                }
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color.White)
+            ) {
+                AndroidView(
+                    factory = { context ->
+                        BarChart(context).apply {
+                            chart.value = this
+                            setChart(groupedDataSent, groupedDataReceived)
+                            legend.isEnabled = false
+                            getAxis(YAxis.AxisDependency.LEFT).textSize = 12f
+                            animateXY(animationDuration, animationDuration)
+                            xAxis.setDrawGridLines(false)
+                        }
+                    },
+                    modifier = Modifier.fillMaxSize()
+                )
             }
         }
     }
@@ -192,7 +171,7 @@ fun BarChart.setChart(dataSent: Map<Month, Float>, dataReceived: Map<Month, Floa
     }
 
     val barData = BarData(barEntry)
-    barData.barWidth = 0.4f
+    barData.barWidth = 0.45f
 
     data = barData
     barEntry.valueTextSize = 12f
@@ -229,7 +208,7 @@ fun getColorBasedOnData(value: Float, max: Float): Color {
 
 @Preview(showBackground = false)
 @Composable
-fun PreviewMonthlyData() {
+fun PreviewConsumptionGraph() {
     val randomData = generateRandomDataForYear(2024)
-    MonthlyData(randomData.first, randomData.second)
+    ConsumptionGraph(randomData.first, randomData.second)
 }

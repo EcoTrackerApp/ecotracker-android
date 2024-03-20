@@ -17,85 +17,95 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import fr.umontpellier.carbonalyser.R
-import fr.umontpellier.carbonalyser.ui.theme.CarbonalyserTheme
+import fr.umontpellier.carbonalyser.ui.theme.EcoTrackerTheme
 
 @Composable
-fun Header() {
+fun Header(navController: NavController) {
     var activeTab by remember { mutableStateOf("Général") }
     var blueColor = 0xFF1a74ef
     var grayColor = 0xFF96979a
 
-    CarbonalyserTheme {
-        Column(
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Color.White)
+            .fillMaxWidth()
+            .wrapContentHeight(Alignment.CenterVertically)
+            .padding(top = 10.dp, start = 16.dp, end = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        horizontalAlignment = Alignment.Start
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.new_logo),
+                contentDescription = "Application logo",
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(CircleShape)
+            )
+            Text(
+                text = "EcoTracker",
+                color = Color.Black,
+                fontFamily = FontFamily(Font(R.font.aleo_bold)),
+                fontSize = 20.sp
+            )
+        }
+
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color.White)
-                .fillMaxWidth()
-                .wrapContentHeight(Alignment.CenterVertically)
-                .padding(top = 10.dp, start = 16.dp, end = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            horizontalAlignment = Alignment.Start
+                .padding(vertical = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Image(
-                    painter = painterResource(id = R.drawable.logo),
-                    contentDescription = "Application logo",
-                    modifier = Modifier
-                        .size(48.dp)
-                        .clip(CircleShape)
-                )
-                Text(
-                    text = "Nom de l'application",
-                    color = Color.Black,
-                    fontFamily = FontFamily(Font(R.font.aleo_bold)),
-                    fontSize = 20.sp
-                )
-            }
-
-            Row(
+            Text(
+                text = "Général",
+                color = if (activeTab == "Général") Color(blueColor) else Color(grayColor),
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = "Général",
-                    color = if (activeTab == "Général") Color(blueColor) else Color(grayColor),
-                    modifier = Modifier
-                        .weight(1f)
-                        .clickable { activeTab = "Général" }
-                        .wrapContentWidth(Alignment.CenterHorizontally),
-                )
-                Text(
-                    text = "Graphes",
-                    color = if (activeTab == "Graphes") Color(blueColor) else Color(grayColor),
-                    modifier = Modifier
-                        .weight(1f)
-                        .clickable { activeTab = "Graphes" }
-                        .wrapContentWidth(Alignment.CenterHorizontally),
-                )
-                Text(
-                    text = "Application",
-                    color = if (activeTab == "Application") Color(blueColor) else Color(grayColor),
-                    modifier = Modifier
-                        .weight(1f)
-                        .clickable { activeTab = "Application" }
-                        .wrapContentWidth(Alignment.CenterHorizontally),
-                )
-            }
+                    .weight(1f)
+                    .clickable {
+                        activeTab = "Général"
+                        navController.navigate("dashboardScreen")
+                    }
+                    .wrapContentWidth(Alignment.CenterHorizontally),
+            )
+            Text(
+                text = "Graphes",
+                color = if (activeTab == "Graphes") Color(blueColor) else Color(grayColor),
+                modifier = Modifier
+                    .weight(1f)
+                    .clickable {
+                        activeTab = "Graphes"
+                        navController.navigate("graphsScreen")
+                    }
+                    .wrapContentWidth(Alignment.CenterHorizontally),
+            )
+            Text(
+                text = "Application",
+                color = if (activeTab == "Application") Color(blueColor) else Color(grayColor),
+                modifier = Modifier
+                    .weight(1f)
+                    .clickable {
+                        activeTab = "Application"
+                        navController.navigate("applicationScreen")
+                    }
+                    .wrapContentWidth(Alignment.CenterHorizontally),
+            )
         }
     }
 }
 
 
-
 @Preview
 @Composable
 fun HeaderPreview() {
-    Header()
+    EcoTrackerTheme {
+        Header(navController = rememberNavController())
+    }
 }
