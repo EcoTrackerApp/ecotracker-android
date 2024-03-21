@@ -1,26 +1,29 @@
 package fr.umontpellier.carbonalyser.util
 
-import java.time.LocalDate
+import java.time.LocalDateTime
+import kotlin.math.sin
 import kotlin.random.Random
 
 class GenerateRandomData {
     companion object {
-        fun generateRandomDataForYear(year: Int): Pair<Map<LocalDate, Float>, Map<LocalDate, Float>> {
-            val startDate = LocalDate.of(year, 1, 1)
-            val endDate = LocalDate.of(year, 12, 31)
+        fun generateRandomDataForYear(year: Int): Pair<Map<LocalDateTime, Float>, Map<LocalDateTime, Float>> {
+            val startDate = LocalDateTime.of(year, 1, 1, 0, 0)
+            val endDate = LocalDateTime.of(year, 12, 31, 23, 0)
 
-            val dataSent = mutableMapOf<LocalDate, Float>()
-            val dataReceived = mutableMapOf<LocalDate, Float>()
+            val dataSent = mutableMapOf<LocalDateTime, Float>()
+            val dataReceived = mutableMapOf<LocalDateTime, Float>()
 
             var currentDate = startDate
             while (currentDate <= endDate) {
-                val randomSent = Random.nextFloat() * (2 * Random.nextInt(1, currentDate.month.value + 1))
-                val randomReceived = Random.nextFloat() * (4 * Random.nextInt(1, currentDate.month.value + 1))
+                // Utilisez une fonction sinus pour moduler la quantité de données générées
+                val modulation = sin(currentDate.monthValue.toDouble() / 12.0 * 2.0 * Math.PI) + Random.nextFloat() / 2
+                val randomSent = (Random.nextFloat() + modulation).coerceIn(0.0, 10.0)
+                val randomReceived = (Random.nextFloat()  + modulation).coerceIn(0.0, 10.0)
 
-                dataSent[currentDate] = randomSent
-                dataReceived[currentDate] = randomReceived
+                dataSent[currentDate] = randomSent.toFloat()
+                dataReceived[currentDate] = randomReceived.toFloat()
 
-                currentDate = currentDate.plusDays(1)
+                currentDate = currentDate.plusHours(1)
             }
 
             return Pair(dataSent, dataReceived)
