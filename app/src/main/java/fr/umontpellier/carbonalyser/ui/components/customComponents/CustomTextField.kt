@@ -9,6 +9,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -27,24 +28,26 @@ fun CustomTextField(
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center,
         modifier = modifier
             .background(Color.White, RoundedCornerShape(8.dp))
-            .border(1.dp, Color.DarkGray, RoundedCornerShape(8.dp))
-            .padding(horizontal = 12.dp, vertical = 8.dp)
+            .border(1.dp, Color.Black, RoundedCornerShape(8.dp))
+            .padding(horizontal = 8.dp, vertical = 2.dp)
             .wrapContentWidth()
+            .height(30.dp)
     ) {
         Text(
             text = value,
+            style = MaterialTheme.typography.bodyMedium,
             fontSize = 12.sp,
             modifier = Modifier
-                .padding(end = 8.dp),
+                .padding(end = 2.dp),
             maxLines = 1,
-            overflow = TextOverflow.Ellipsis
         )
         Icon(
             imageVector = if (isMenuExpanded) Icons.Default.ExitToApp else Icons.Default.ArrowDropDown,
             contentDescription = "Dropdown Icon",
-            tint = Color.DarkGray,
+            tint = Color.Black,
             modifier = Modifier.size(20.dp)
         )
     }
@@ -57,6 +60,6 @@ fun CustomTextField(
 fun CustomTextFieldPreview() {
     CustomTextField(
         value = "CustomTextField",
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.height(30.dp)
     )
 }

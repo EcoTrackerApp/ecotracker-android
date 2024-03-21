@@ -3,10 +3,11 @@ package fr.umontpellier.carbonalyser.ui.components.dataGraph
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -23,25 +24,34 @@ import com.github.mikephil.charting.data.BarData
 import com.github.mikephil.charting.data.BarDataSet
 import com.github.mikephil.charting.data.BarEntry
 import fr.umontpellier.carbonalyser.ui.components.customComponents.CustomDropdownMenu
+import fr.umontpellier.carbonalyser.ui.components.customComponents.CustomGroupButton
 import fr.umontpellier.carbonalyser.ui.components.customComponents.CustomTextField
+import fr.umontpellier.carbonalyser.ui.theme.EcoTrackerTheme
 import fr.umontpellier.carbonalyser.util.GenerateRandomData
 import fr.umontpellier.carbonalyser.util.GenerateRandomData.Companion.generateRandomDataForYear
 import fr.umontpellier.carbonalyser.util.MonthAxisValueFormatter
-import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.Month
 import kotlin.random.Random
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ConsumptionGraph(dataSent: Map<LocalDate, Float>, dataReceived: Map<LocalDate, Float>) {
-    val selectedOption = remember { mutableStateOf("Données totales") }
-    val options = listOf("Données envoyées", "Données reçus", "Données totales")
+fun ConsumptionGraph(dataSent: Map<LocalDateTime, Float>, dataReceived: Map<LocalDateTime, Float>) {
+    // GroupButton
+    var selectedIndexNetwork by remember { mutableIntStateOf(0) }
+    var selectedIndexData by remember { mutableIntStateOf(0) }
+
+    // Dropdown
+    val selectedOption = remember { mutableStateOf("Année") }
+    val options = listOf("Année", "Mois", "Jour")
     val expanded = remember { mutableStateOf(false) }
 
+    // Data
     val groupedDataSent = sortDataByMonth(dataSent)
     val groupedDataReceived = sortDataByMonth(dataReceived)
 
+    // Chart
     val chart = remember { mutableStateOf<BarChart?>(null) }
     val animationDuration = 1500
 
@@ -49,7 +59,7 @@ fun ConsumptionGraph(dataSent: Map<LocalDate, Float>, dataReceived: Map<LocalDat
         colors = CardDefaults.cardColors(Color.White),
         modifier = Modifier
             .fillMaxWidth()
-            .aspectRatio(0.8f)
+            .aspectRatio(0.7f)
             .padding(16.dp)
     ) {
         Column(
@@ -57,11 +67,13 @@ fun ConsumptionGraph(dataSent: Map<LocalDate, Float>, dataReceived: Map<LocalDat
                 .fillMaxSize()
                 .padding(16.dp)
         ) {
+
+            // Title
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(Color.White)
-                    .padding(10.dp)
+                    .padding(vertical = 8.dp)
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -75,7 +87,8 @@ fun ConsumptionGraph(dataSent: Map<LocalDate, Float>, dataReceived: Map<LocalDat
 
                     ExposedDropdownMenuBox(
                         expanded = expanded.value,
-                        onExpandedChange = { expanded.value = !expanded.value }
+                        onExpandedChange = { expanded.value = !expanded.value },
+                        modifier = Modifier.height(30.dp)
                     ) {
                         CustomTextField(
                             value = selectedOption.value,
@@ -91,17 +104,17 @@ fun ConsumptionGraph(dataSent: Map<LocalDate, Float>, dataReceived: Map<LocalDat
                                 selectedOption.value = option
                                 expanded.value = false
                                 when (option) {
-                                    "Données envoyées" -> {
+                                    "Année" -> {
                                         chart.value?.setChart(groupedDataSent, emptyMap())
                                         chart.value?.animateXY(animationDuration, animationDuration)
                                     }
 
-                                    "Données reçus" -> {
+                                    "Mois" -> {
                                         chart.value?.setChart(emptyMap(), groupedDataReceived)
                                         chart.value?.animateXY(animationDuration, animationDuration)
                                     }
 
-                                    "Données totales" -> {
+                                    "Jour" -> {
                                         chart.value?.setChart(groupedDataSent, groupedDataReceived)
                                         chart.value?.animateXY(animationDuration, animationDuration)
                                     }
@@ -115,7 +128,69 @@ fun ConsumptionGraph(dataSent: Map<LocalDate, Float>, dataReceived: Map<LocalDat
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color.White)
+            ) {
+                CustomGroupButton(
+                    items = listOf("Wifi", "Données mobile", "Total"),
+                    selectedIndex = selectedIndexNetwork,
+                    onSelectedIndexChanged = { index ->
+                        selectedIndexNetwork = index
+                        when (index) {
+                            0 -> {
+                                chart.value?.setChart(groupedDataSent, emptyMap())
+                                chart.value?.animateXY(animationDuration, animationDuration)
+                            }
+
+                            1 -> {
+                                chart.value?.setChart(emptyMap(), groupedDataReceived)
+                                chart.value?.animateXY(animationDuration, animationDuration)
+                            }
+
+                            2 -> {
+                                chart.value?.setChart(groupedDataSent, groupedDataReceived)
+                                chart.value?.animateXY(animationDuration, animationDuration)
+                            }
+                        }
+                    }
+                )
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // CustomGroupButton
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+            ) {
+                CustomGroupButton(
+                    items = listOf("Envoyées", "Reçus", "Totales"),
+                    selectedIndex = selectedIndexData,
+                    onSelectedIndexChanged = { index ->
+                        selectedIndexData = index
+                        when (index) {
+                            0 -> {
+                                chart.value?.setChart(groupedDataSent, emptyMap())
+                                chart.value?.animateXY(animationDuration, animationDuration)
+                            }
+
+                            1 -> {
+                                chart.value?.setChart(emptyMap(), groupedDataReceived)
+                                chart.value?.animateXY(animationDuration, animationDuration)
+                            }
+
+                            2 -> {
+                                chart.value?.setChart(groupedDataSent, groupedDataReceived)
+                                chart.value?.animateXY(animationDuration, animationDuration)
+                            }
+                        }
+                    }
+                )
+            }
+
+            // BarChart
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
             ) {
                 AndroidView(
                     factory = { context ->
@@ -124,12 +199,37 @@ fun ConsumptionGraph(dataSent: Map<LocalDate, Float>, dataReceived: Map<LocalDat
                             setChart(groupedDataSent, groupedDataReceived)
                             legend.isEnabled = false
                             getAxis(YAxis.AxisDependency.LEFT).textSize = 12f
-                            animateXY(animationDuration, animationDuration)
+                            //animateXY(animationDuration, animationDuration)
                             xAxis.setDrawGridLines(false)
                         }
                     },
                     modifier = Modifier.fillMaxSize()
                 )
+            }
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+                    .align(Alignment.CenterHorizontally),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                IconButton(
+                    onClick = { /* Action pour aller au mois précédent */ }
+                ) {
+                    Icon(Icons.Default.ArrowBack, contentDescription = "Mois précédent")
+                }
+
+                Text(
+                    text = "Nom du mois sélectionné",
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                )
+
+                IconButton(
+                    onClick = { /* Action pour aller au mois suivant */ }
+                ) {
+                    Icon(Icons.Default.ArrowForward, contentDescription = "Mois suivant")
+                }
             }
         }
     }
@@ -192,7 +292,7 @@ fun BarChart.setChart(dataSent: Map<Month, Float>, dataReceived: Map<Month, Floa
     invalidate()
 }
 
-fun sortDataByMonth(data: Map<LocalDate, Float>): Map<Month, Float> {
+fun sortDataByMonth(data: Map<LocalDateTime, Float>): Map<Month, Float> {
     val sortedData = Month.values().associateWith { 0f }.toMutableMap()
     data.forEach { (date, value) ->
         val month = date.month
@@ -200,6 +300,27 @@ fun sortDataByMonth(data: Map<LocalDate, Float>): Map<Month, Float> {
     }
     return sortedData
 }
+
+fun sortDataByDayForAMouth(data: Map<LocalDateTime, Float>, month: Month): Map<Int, Float> {
+    val sortedData = (1..month.length(false)).associateWith { 0f }.toMutableMap()
+    data.forEach { (date, value) ->
+        if (date.month == month) {
+            sortedData[date.dayOfMonth] = value
+        }
+    }
+    return sortedData
+}
+
+fun sortDataByHourForADay(data: Map<LocalDateTime, Float>, day: Int): Map<Int, Float> {
+    val sortedData = (0..23).associateWith { 0f }.toMutableMap()
+    data.forEach { (date, value) ->
+        if (date.dayOfMonth == day) {
+            sortedData[date.hour] = value
+        }
+    }
+    return sortedData
+}
+
 
 fun getColorBasedOnData(value: Float, max: Float): Color {
     val ratio = value / max
@@ -209,6 +330,8 @@ fun getColorBasedOnData(value: Float, max: Float): Color {
 @Preview(showBackground = false)
 @Composable
 fun PreviewConsumptionGraph() {
-    val randomData = generateRandomDataForYear(2024)
-    ConsumptionGraph(randomData.first, randomData.second)
+    EcoTrackerTheme {
+        val randomData = generateRandomDataForYear(2024)
+        ConsumptionGraph(randomData.first, randomData.second)
+    }
 }
