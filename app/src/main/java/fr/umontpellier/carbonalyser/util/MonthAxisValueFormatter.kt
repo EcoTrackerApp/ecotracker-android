@@ -5,7 +5,7 @@ import com.github.mikephil.charting.formatter.ValueFormatter
 
 class MonthAxisValueFormatter : ValueFormatter() {
     private val months = arrayOf(
-        "Jan", "Fev", "Mars", "Avr", "Mai", "Juin",
+        "", "Jan", "Fev", "Mars", "Avr", "Mai", "Juin",
         "Juil", "Aout", "Sep", "Oct", "Nov", "Dec"
     )
 

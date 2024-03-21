@@ -13,47 +13,171 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.graphics.ColorUtils
 import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.components.YAxis
 import com.github.mikephil.charting.data.BarData
 import com.github.mikephil.charting.data.BarDataSet
 import com.github.mikephil.charting.data.BarEntry
+import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
+import fr.umontpellier.carbonalyser.data.model.DataOrigin
+import fr.umontpellier.carbonalyser.data.model.DataRecord
+import fr.umontpellier.carbonalyser.data.model.DataType
 import fr.umontpellier.carbonalyser.ui.components.customComponents.CustomDropdownMenu
 import fr.umontpellier.carbonalyser.ui.components.customComponents.CustomGroupButton
 import fr.umontpellier.carbonalyser.ui.components.customComponents.CustomTextField
 import fr.umontpellier.carbonalyser.ui.theme.EcoTrackerTheme
-import fr.umontpellier.carbonalyser.util.GenerateRandomData
+import fr.umontpellier.carbonalyser.util.DayAxisValueFormatter
 import fr.umontpellier.carbonalyser.util.GenerateRandomData.Companion.generateRandomDataForYear
 import fr.umontpellier.carbonalyser.util.MonthAxisValueFormatter
+import fr.umontpellier.carbonalyser.util.MonthTraduction.Companion.getMonthNameInFrench
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.Month
-import kotlin.random.Random
+import java.time.Year
+import kotlin.math.pow
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ConsumptionGraph(dataSent: Map<LocalDateTime, Float>, dataReceived: Map<LocalDateTime, Float>) {
-    // GroupButton
-    var selectedIndexNetwork by remember { mutableIntStateOf(0) }
-    var selectedIndexData by remember { mutableIntStateOf(0) }
-
-    // Dropdown
-    val selectedOption = remember { mutableStateOf("Année") }
-    val options = listOf("Année", "Mois", "Jour")
-    val expanded = remember { mutableStateOf(false) }
-
-    // Data
-    val groupedDataSent = sortDataByMonth(dataSent)
-    val groupedDataReceived = sortDataByMonth(dataReceived)
-
+fun ConsumptionGraph(data: List<DataRecord>, dataDayLimit: Int) {
     // Chart
     val chart = remember { mutableStateOf<BarChart?>(null) }
-    val animationDuration = 1500
+    val animationDuration = 1000
+
+    // GroupButton
+    var selectedIndexDataType by remember { mutableIntStateOf(2) }
+    var selectedIndexDataOrigin by remember { mutableIntStateOf(2) }
+    val dataTypeOption = listOf(DataType.WIFI, DataType.MOBILE_DATA, DataType.ALL)
+    val dataOriginOption = listOf(DataOrigin.SEND, DataOrigin.RECEIVED, DataOrigin.ALL)
+
+    // Dropdown
+    val selectedOptionDataDate = remember { mutableStateOf("Année") }
+    val dataDateOption = listOf("Année", "Mois", "Jour")
+    val expanded = remember { mutableStateOf(false) }
+
+    // Date selection
+    val currentDate = remember { mutableStateOf(LocalDateTime.now()) }
+
+    val selectedDateText = when (selectedOptionDataDate.value) {
+        "Année" -> currentDate.value.year.toString()
+        "Mois" -> "%s %d".format(getMonthNameInFrench(currentDate.value.month), currentDate.value.year)
+        "Jour" -> "%d %s %d".format(
+            currentDate.value.dayOfMonth,
+            getMonthNameInFrench(currentDate.value.month),
+            currentDate.value.year
+        )
+
+        else -> "Erreur"
+    }
+
+    val goToPrevious = {
+        when (selectedOptionDataDate.value) {
+            "Année" -> {
+                if (currentDate.value.year > 2022) {
+                    currentDate.value = currentDate.value.minusYears(1)
+                    chart.value?.setChart(
+                        data,
+                        currentDate.value,
+                        dataTypeOption[selectedIndexDataType],
+                        dataOriginOption[selectedIndexDataOrigin],
+                        selectedOptionDataDate.value,
+                        dataDayLimit
+                    )
+                    chart.value?.animateXY(animationDuration, animationDuration)
+                } else {
+                    println("Date limite atteinte")
+                }
+            }
+
+            "Mois" -> {
+                if (currentDate.value.year > 2022 || (currentDate.value.year == 2022 && currentDate.value.monthValue > 1)) {
+                    currentDate.value = currentDate.value.minusMonths(1)
+                    chart.value?.setChart(
+                        data,
+                        currentDate.value,
+                        dataTypeOption[selectedIndexDataType],
+                        dataOriginOption[selectedIndexDataOrigin],
+                        selectedOptionDataDate.value,
+                        dataDayLimit
+                    )
+                    chart.value?.animateXY(animationDuration, animationDuration)
+                } else {
+                    println("Date limite atteinte")
+                }
+            }
+
+            "Jour" -> {
+                if (currentDate.value.isAfter(LocalDateTime.of(2022, 1, 1, 0, 0))) {
+                    currentDate.value = currentDate.value.minusDays(1)
+                    chart.value?.setChart(
+                        data,
+                        currentDate.value,
+                        dataTypeOption[selectedIndexDataType],
+                        dataOriginOption[selectedIndexDataOrigin],
+                        selectedOptionDataDate.value,
+                        dataDayLimit
+                    )
+                    chart.value?.animateXY(animationDuration, animationDuration)
+                } else {
+                    println("Date limite atteinte")
+                }
+            }
+
+            else -> {}
+        }
+    }
+
+    val goToNext = {
+        when (selectedOptionDataDate.value) {
+            "Année" -> {
+                currentDate.value = currentDate.value.plusYears(1)
+                chart.value?.setChart(
+                    data,
+                    currentDate.value,
+                    dataTypeOption[selectedIndexDataType],
+                    dataOriginOption[selectedIndexDataOrigin],
+                    selectedOptionDataDate.value,
+                    dataDayLimit
+                )
+                chart.value?.animateXY(animationDuration, animationDuration)
+            }
+
+            "Mois" -> {
+                currentDate.value = currentDate.value.plusMonths(1)
+                chart.value?.setChart(
+                    data,
+                    currentDate.value,
+                    dataTypeOption[selectedIndexDataType],
+                    dataOriginOption[selectedIndexDataOrigin],
+                    selectedOptionDataDate.value,
+                    dataDayLimit
+                )
+                chart.value?.animateXY(animationDuration, animationDuration)
+            }
+
+            "Jour" -> {
+                currentDate.value = currentDate.value.plusDays(1)
+                chart.value?.setChart(
+                    data,
+                    currentDate.value,
+                    dataTypeOption[selectedIndexDataType],
+                    dataOriginOption[selectedIndexDataOrigin],
+                    selectedOptionDataDate.value,
+                    dataDayLimit
+                )
+                chart.value?.animateXY(animationDuration, animationDuration)
+            }
+
+            else -> {}
+        }
+    }
 
     Card(
         colors = CardDefaults.cardColors(Color.White),
@@ -65,65 +189,80 @@ fun ConsumptionGraph(dataSent: Map<LocalDateTime, Float>, dataReceived: Map<Loca
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp)
+                .padding(8.dp)
         ) {
 
             // Title
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color.White)
-                    .padding(vertical = 8.dp)
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
+                Text(
+                    text = "Consommation (Gb)",
+                    fontSize = 16.sp,
+                    modifier = Modifier.weight(1f)
+                )
+
+                ExposedDropdownMenuBox(
+                    expanded = expanded.value,
+                    onExpandedChange = { expanded.value = !expanded.value },
+                    modifier = Modifier.height(30.dp)
                 ) {
-                    Text(
-                        text = "Consommation (Gb)",
-                        fontSize = 16.sp,
-                        modifier = Modifier.weight(1f)
+                    CustomTextField(
+                        value = selectedOptionDataDate.value,
+                        modifier = Modifier.menuAnchor(),
+                        isMenuExpanded = expanded.value
                     )
 
-                    ExposedDropdownMenuBox(
+                    CustomDropdownMenu(
                         expanded = expanded.value,
-                        onExpandedChange = { expanded.value = !expanded.value },
-                        modifier = Modifier.height(30.dp)
-                    ) {
-                        CustomTextField(
-                            value = selectedOption.value,
-                            modifier = Modifier.menuAnchor(),
-                            isMenuExpanded = expanded.value
-                        )
-
-                        CustomDropdownMenu(
-                            expanded = expanded.value,
-                            onDismissRequest = { expanded.value = false },
-                            options = options,
-                            onOptionSelected = { option ->
-                                selectedOption.value = option
-                                expanded.value = false
-                                when (option) {
-                                    "Année" -> {
-                                        chart.value?.setChart(groupedDataSent, emptyMap())
-                                        chart.value?.animateXY(animationDuration, animationDuration)
-                                    }
-
-                                    "Mois" -> {
-                                        chart.value?.setChart(emptyMap(), groupedDataReceived)
-                                        chart.value?.animateXY(animationDuration, animationDuration)
-                                    }
-
-                                    "Jour" -> {
-                                        chart.value?.setChart(groupedDataSent, groupedDataReceived)
-                                        chart.value?.animateXY(animationDuration, animationDuration)
-                                    }
+                        onDismissRequest = { expanded.value = false },
+                        options = dataDateOption,
+                        onOptionSelected = { option ->
+                            selectedOptionDataDate.value = option
+                            expanded.value = false
+                            when (option) {
+                                "Année" -> {
+                                    chart.value?.setChart(
+                                        data,
+                                        currentDate.value,
+                                        dataTypeOption[selectedIndexDataType],
+                                        dataOriginOption[selectedIndexDataOrigin],
+                                        option,
+                                        dataDayLimit
+                                    )
+                                    chart.value?.animateXY(animationDuration, animationDuration)
                                 }
-                            },
-                        )
-                    }
+
+                                "Mois" -> {
+                                    chart.value?.setChart(
+                                        data,
+                                        currentDate.value,
+                                        dataTypeOption[selectedIndexDataType],
+                                        dataOriginOption[selectedIndexDataOrigin],
+                                        option,
+                                        dataDayLimit
+                                    )
+                                    chart.value?.animateXY(animationDuration, animationDuration)
+                                }
+
+                                "Jour" -> {
+                                    chart.value?.setChart(
+                                        data,
+                                        currentDate.value,
+                                        dataTypeOption[selectedIndexDataType],
+                                        dataOriginOption[selectedIndexDataOrigin],
+                                        option,
+                                        dataDayLimit
+                                    )
+                                    chart.value?.animateXY(animationDuration, animationDuration)
+                                }
+                            }
+                        },
+                    )
                 }
             }
+
 
             Box(
                 modifier = Modifier
@@ -131,22 +270,43 @@ fun ConsumptionGraph(dataSent: Map<LocalDateTime, Float>, dataReceived: Map<Loca
             ) {
                 CustomGroupButton(
                     items = listOf("Wifi", "Données mobile", "Total"),
-                    selectedIndex = selectedIndexNetwork,
+                    selectedIndex = selectedIndexDataType,
                     onSelectedIndexChanged = { index ->
-                        selectedIndexNetwork = index
+                        selectedIndexDataType = index
                         when (index) {
                             0 -> {
-                                chart.value?.setChart(groupedDataSent, emptyMap())
+                                chart.value?.setChart(
+                                    data,
+                                    currentDate.value,
+                                    dataTypeOption[selectedIndexDataType],
+                                    dataOriginOption[selectedIndexDataOrigin],
+                                    selectedOptionDataDate.value,
+                                    dataDayLimit
+                                )
                                 chart.value?.animateXY(animationDuration, animationDuration)
                             }
 
                             1 -> {
-                                chart.value?.setChart(emptyMap(), groupedDataReceived)
+                                chart.value?.setChart(
+                                    data,
+                                    currentDate.value,
+                                    dataTypeOption[selectedIndexDataType],
+                                    dataOriginOption[selectedIndexDataOrigin],
+                                    selectedOptionDataDate.value,
+                                    dataDayLimit
+                                )
                                 chart.value?.animateXY(animationDuration, animationDuration)
                             }
 
                             2 -> {
-                                chart.value?.setChart(groupedDataSent, groupedDataReceived)
+                                chart.value?.setChart(
+                                    data,
+                                    currentDate.value,
+                                    dataTypeOption[selectedIndexDataType],
+                                    dataOriginOption[selectedIndexDataOrigin],
+                                    selectedOptionDataDate.value,
+                                    dataDayLimit
+                                )
                                 chart.value?.animateXY(animationDuration, animationDuration)
                             }
                         }
@@ -163,22 +323,43 @@ fun ConsumptionGraph(dataSent: Map<LocalDateTime, Float>, dataReceived: Map<Loca
             ) {
                 CustomGroupButton(
                     items = listOf("Envoyées", "Reçus", "Totales"),
-                    selectedIndex = selectedIndexData,
+                    selectedIndex = selectedIndexDataOrigin,
                     onSelectedIndexChanged = { index ->
-                        selectedIndexData = index
+                        selectedIndexDataOrigin = index
                         when (index) {
                             0 -> {
-                                chart.value?.setChart(groupedDataSent, emptyMap())
+                                chart.value?.setChart(
+                                    data,
+                                    currentDate.value,
+                                    dataTypeOption[selectedIndexDataType],
+                                    dataOriginOption[selectedIndexDataOrigin],
+                                    selectedOptionDataDate.value,
+                                    dataDayLimit
+                                )
                                 chart.value?.animateXY(animationDuration, animationDuration)
                             }
 
                             1 -> {
-                                chart.value?.setChart(emptyMap(), groupedDataReceived)
+                                chart.value?.setChart(
+                                    data,
+                                    currentDate.value,
+                                    dataTypeOption[selectedIndexDataType],
+                                    dataOriginOption[selectedIndexDataOrigin],
+                                    selectedOptionDataDate.value,
+                                    dataDayLimit
+                                )
                                 chart.value?.animateXY(animationDuration, animationDuration)
                             }
 
                             2 -> {
-                                chart.value?.setChart(groupedDataSent, groupedDataReceived)
+                                chart.value?.setChart(
+                                    data,
+                                    currentDate.value,
+                                    dataTypeOption[selectedIndexDataType],
+                                    dataOriginOption[selectedIndexDataOrigin],
+                                    selectedOptionDataDate.value,
+                                    dataDayLimit
+                                )
                                 chart.value?.animateXY(animationDuration, animationDuration)
                             }
                         }
@@ -196,10 +377,17 @@ fun ConsumptionGraph(dataSent: Map<LocalDateTime, Float>, dataReceived: Map<Loca
                     factory = { context ->
                         BarChart(context).apply {
                             chart.value = this
-                            setChart(groupedDataSent, groupedDataReceived)
+                            setChart(
+                                data,
+                                currentDate.value,
+                                dataTypeOption[selectedIndexDataType],
+                                dataOriginOption[selectedIndexDataOrigin],
+                                selectedOptionDataDate.value,
+                                dataDayLimit
+                            )
                             legend.isEnabled = false
                             getAxis(YAxis.AxisDependency.LEFT).textSize = 12f
-                            //animateXY(animationDuration, animationDuration)
+                            animateXY(animationDuration, animationDuration)
                             xAxis.setDrawGridLines(false)
                         }
                     },
@@ -210,78 +398,110 @@ fun ConsumptionGraph(dataSent: Map<LocalDateTime, Float>, dataReceived: Map<Loca
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-                    .align(Alignment.CenterHorizontally),
-                horizontalArrangement = Arrangement.Center
+                    .height(30.dp)
+                    .padding(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 IconButton(
-                    onClick = { /* Action pour aller au mois précédent */ }
+                    onClick = { goToPrevious() },
+                    modifier = Modifier.weight(0.2f)
                 ) {
-                    Icon(Icons.Default.ArrowBack, contentDescription = "Mois précédent")
+                    Icon(Icons.Default.ArrowBack, contentDescription = "Précédent")
                 }
-
                 Text(
-                    text = "Nom du mois sélectionné",
+                    text = selectedDateText,
+                    textAlign = TextAlign.Center,
                     modifier = Modifier.padding(horizontal = 16.dp)
                 )
-
                 IconButton(
-                    onClick = { /* Action pour aller au mois suivant */ }
+                    onClick = { goToNext() },
+                    modifier = Modifier.weight(0.2f)
                 ) {
-                    Icon(Icons.Default.ArrowForward, contentDescription = "Mois suivant")
+                    Icon(Icons.Default.ArrowForward, contentDescription = "Suivant")
                 }
             }
         }
     }
 }
 
+fun getColorBasedOnData(
+    value: Float,
+    currentDate: LocalDateTime,
+    selectedOptionDataDate: String,
+    dataDayLimit: Int
+): Color {
+    val daysInMonth = currentDate.month.length(Year.of(currentDate.year).isLeap)// Nombre de jours dans le mois actuel
 
-fun BarChart.setChart(dataSent: Map<Month, Float>, dataReceived: Map<Month, Float>) {
-    val barEntry: BarDataSet
+    val adjustedLimit = when (selectedOptionDataDate) {
+        "Jour" -> dataDayLimit / daysInMonth.toFloat() // Limite quotidienne divisée par le nombre de jours dans le mois
+        "Mois" -> dataDayLimit // Limite mensuelle
+        "Année" -> (dataDayLimit * daysInMonth).toFloat() // Limite annuelle multipliée par le nombre de jours dans le mois
+        else -> 1f // Valeur par défaut pour éviter la division par zéro
+    }
 
-    if (dataSent.isNotEmpty() && dataReceived.isNotEmpty()) {
-        val mergedData = dataSent.toMutableMap()
-        dataReceived.forEach { (date, value) ->
-            mergedData[date] = mergedData.getOrDefault(date, 0f) + value
-        }
+    val ratio = value / adjustedLimit.toFloat() // Calcul du ratio en fonction de la limite ajustée
 
-        val barEntriesTotal = mergedData.entries.toList().mapIndexed { index, (_, value) ->
-            BarEntry(index.toFloat(), value)
-        }
-        val maxSentAndReceived = barEntriesTotal.maxOfOrNull { it.y } ?: 0f
-        barEntry = BarDataSet(barEntriesTotal, "Données envoyées (GB) et reçues (GB)").apply {
-            colors = barEntriesTotal.map { getColorBasedOnData(it.y, maxSentAndReceived).toArgb() }
-        }
-    } else if (dataSent.isNotEmpty()) {
-        val barEntriesSent = dataSent.entries.toList().mapIndexed { index, (_, value) ->
-            BarEntry(index.toFloat(), value)
-        }
-        val maxSent = barEntriesSent.maxOfOrNull { it.y } ?: 0f
-        barEntry = BarDataSet(barEntriesSent, "Données envoyées (GB)").apply {
-            colors = barEntriesSent.map { getColorBasedOnData(it.y, maxSent).toArgb() }
-        }
-    } else {
-        val barEntriesReceived = dataReceived.entries.toList().mapIndexed { index, (_, value) ->
-            BarEntry(index.toFloat(), value)
-        }
-        val maxReceived = barEntriesReceived.maxOfOrNull { it.y } ?: 0f
-        barEntry = BarDataSet(barEntriesReceived, "Données reçues (GB)").apply {
-            colors = barEntriesReceived.map { getColorBasedOnData(it.y, maxReceived).toArgb() }
-        }
+    // Appliquer une transformation non linéaire au ratio pour réduire l'impact des valeurs plus petites
+    val adjustedRatio = ratio.pow(2) // Vous pouvez ajuster l'exposant selon vos besoins
+
+    // Assure que le ratio ajusté est compris entre 0 et 1
+    val clampedAdjustedRatio = adjustedRatio.coerceIn(0f, 1f)
+
+    // Détermine la couleur en utilisant une interpolation linéaire entre le vert et le rouge
+    return lerp(Color.Green, Color.Red, clampedAdjustedRatio)
+}
+
+
+fun BarChart.setChart(
+    dataList: List<DataRecord>,
+    currentDate: LocalDateTime,
+    dataType: DataType,
+    dataOrigin: DataOrigin,
+    selectedOption: String,
+    dataDayLimit: Int
+) {
+    val sortedData = when (selectedOption) {
+        "Année" -> sortDataByMonth(dataList, currentDate, dataType, dataOrigin)
+        "Mois" -> sortDataByDay(dataList, currentDate, dataType, dataOrigin)
+        "Jour" -> sortDataByHour(dataList, currentDate, dataType, dataOrigin)
+        else -> emptyMap()
+    }
+
+    val barEntries = sortedData.map { (key, value) ->
+        BarEntry(key.toFloat(), value)
+    }
+
+    val barEntry = BarDataSet(barEntries, "Données (GB)").apply {
+        colors = barEntries.map { getColorBasedOnData(it.y, currentDate, selectedOption, dataDayLimit).toArgb() }
+        setDrawValues(false)
     }
 
     val barData = BarData(barEntry)
-    barData.barWidth = 0.45f
-
     data = barData
+    barData.barWidth = 0.45f
     barEntry.valueTextSize = 12f
     description.isEnabled = false
 
     val xAxis: XAxis = xAxis
     xAxis.position = XAxis.XAxisPosition.BOTTOM
-    xAxis.valueFormatter = MonthAxisValueFormatter()
+
+    when (selectedOption) {
+        "Année" -> {
+            xAxis.valueFormatter = MonthAxisValueFormatter()
+        }
+
+        "Mois" -> {
+            xAxis.valueFormatter = null // Utiliser le formateur d'axe par défaut
+        }
+
+        "Jour" -> {
+            xAxis.valueFormatter = null // Utiliser le formateur d'axe par défaut
+        }
+    }
+
     xAxis.granularity = 1f
-    xAxis.labelCount = dataSent.size
+    xAxis.labelCount = dataList.size
 
     val yAxisLeft: YAxis = axisLeft
     yAxisLeft.axisMinimum = 0f
@@ -292,46 +512,82 @@ fun BarChart.setChart(dataSent: Map<Month, Float>, dataReceived: Map<Month, Floa
     invalidate()
 }
 
-fun sortDataByMonth(data: Map<LocalDateTime, Float>): Map<Month, Float> {
-    val sortedData = Month.values().associateWith { 0f }.toMutableMap()
-    data.forEach { (date, value) ->
-        val month = date.month
-        sortedData[month] = sortedData[month]!! + value
-    }
-    return sortedData
-}
 
-fun sortDataByDayForAMouth(data: Map<LocalDateTime, Float>, month: Month): Map<Int, Float> {
-    val sortedData = (1..month.length(false)).associateWith { 0f }.toMutableMap()
-    data.forEach { (date, value) ->
-        if (date.month == month) {
-            sortedData[date.dayOfMonth] = value
+fun sortDataByMonth(
+    data: List<DataRecord>,
+    currentDate: LocalDateTime,
+    dataType: DataType,
+    dataOrigin: DataOrigin
+): Map<Int, Float> {
+    val sortedData = mutableMapOf<Int, Float>().apply { (1..12).forEach { put(it, 0f) } }
+
+    data.forEach { (itDate, itDataType, itOrigin, itValue) ->
+        if ((dataOrigin == DataOrigin.ALL || itOrigin == dataOrigin) &&
+            (dataType == DataType.ALL || itDataType == dataType) &&
+            itDate.year == currentDate.year
+        ) {
+            sortedData.compute(itDate.monthValue) { _, oldValue -> oldValue!! + itValue }
         }
     }
+
     return sortedData
 }
 
-fun sortDataByHourForADay(data: Map<LocalDateTime, Float>, day: Int): Map<Int, Float> {
-    val sortedData = (0..23).associateWith { 0f }.toMutableMap()
-    data.forEach { (date, value) ->
-        if (date.dayOfMonth == day) {
-            sortedData[date.hour] = value
+fun sortDataByDay(
+    data: List<DataRecord>,
+    currentDate: LocalDateTime,
+    dataType: DataType,
+    dataOrigin: DataOrigin
+): Map<Int, Float> {
+    val sortedData = mutableMapOf<Int, Float>().apply {
+        (1..currentDate.month.length(Year.of(currentDate.year).isLeap)).forEach {
+            put(
+                it,
+                0f
+            )
         }
     }
+
+    data.forEach { (itDate, itDataType, itOrigin, itValue) ->
+        if ((dataOrigin == DataOrigin.ALL || itOrigin == dataOrigin) &&
+            (dataType == DataType.ALL || itDataType == dataType) &&
+            itDate.year == currentDate.year &&
+            itDate.month == currentDate.month
+        ) {
+            sortedData.compute(itDate.dayOfMonth) { _, oldValue -> oldValue!! + itValue }
+        }
+    }
+
     return sortedData
 }
 
+fun sortDataByHour(
+    data: List<DataRecord>,
+    currentDate: LocalDateTime,
+    dataType: DataType,
+    dataOrigin: DataOrigin
+): Map<Int, Float> {
+    val sortedData = mutableMapOf<Int, Float>().apply { (0..23).forEach { put(it, 0f) } }
 
-fun getColorBasedOnData(value: Float, max: Float): Color {
-    val ratio = value / max
-    return lerp(Color.Green, Color.Red, ratio)
+    data.forEach { (itDate, itDataType, itOrigin, itValue) ->
+        if ((dataOrigin == DataOrigin.ALL || itOrigin == dataOrigin) &&
+            (dataType == DataType.ALL || itDataType == dataType) &&
+            itDate.year == currentDate.year &&
+            itDate.month == currentDate.month &&
+            itDate.dayOfMonth == currentDate.dayOfMonth
+        ) {
+            sortedData.compute(itDate.hour) { _, oldValue -> oldValue!! + itValue }
+        }
+    }
+
+    return sortedData
 }
 
 @Preview(showBackground = false)
 @Composable
 fun PreviewConsumptionGraph() {
     EcoTrackerTheme {
-        val randomData = generateRandomDataForYear(2024)
-        ConsumptionGraph(randomData.first, randomData.second)
+        val randomData = generateRandomDataForYear()
+        ConsumptionGraph(randomData, 15)
     }
 }
