@@ -1,7 +1,9 @@
 package fr.umontpellier.carbonalyser.ui.components.dataGraph
 
 
-import androidx.compose.foundation.background
+import android.view.GestureDetector
+import android.view.MotionEvent
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -13,33 +15,30 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.core.graphics.ColorUtils
 import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.components.YAxis
 import com.github.mikephil.charting.data.BarData
 import com.github.mikephil.charting.data.BarDataSet
 import com.github.mikephil.charting.data.BarEntry
-import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
 import fr.umontpellier.carbonalyser.data.model.DataOrigin
 import fr.umontpellier.carbonalyser.data.model.DataRecord
 import fr.umontpellier.carbonalyser.data.model.DataType
-import fr.umontpellier.carbonalyser.ui.components.customComponents.CustomDropdownMenu
-import fr.umontpellier.carbonalyser.ui.components.customComponents.CustomGroupButton
-import fr.umontpellier.carbonalyser.ui.components.customComponents.CustomTextField
+import fr.umontpellier.carbonalyser.ui.components.customComponents.*
 import fr.umontpellier.carbonalyser.ui.theme.EcoTrackerTheme
 import fr.umontpellier.carbonalyser.util.DayAxisValueFormatter
 import fr.umontpellier.carbonalyser.util.GenerateRandomData.Companion.generateRandomDataForYear
 import fr.umontpellier.carbonalyser.util.MonthAxisValueFormatter
 import fr.umontpellier.carbonalyser.util.MonthTraduction.Companion.getMonthNameInFrench
-import java.time.LocalDate
 import java.time.LocalDateTime
-import java.time.Month
 import java.time.Year
 import kotlin.math.pow
 
@@ -184,7 +183,7 @@ fun ConsumptionGraph(data: List<DataRecord>, dataDayLimit: Int) {
         modifier = Modifier
             .fillMaxWidth()
             .aspectRatio(0.7f)
-            .padding(16.dp)
+            .padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
         Column(
             modifier = Modifier
@@ -194,11 +193,11 @@ fun ConsumptionGraph(data: List<DataRecord>, dataDayLimit: Int) {
 
             // Title
             Row(
-                modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Consommation (Gb)",
+                    text = "Consommation de données",
                     fontSize = 16.sp,
                     modifier = Modifier.weight(1f)
                 )
@@ -368,6 +367,25 @@ fun ConsumptionGraph(data: List<DataRecord>, dataDayLimit: Int) {
             }
 
             // BarChart
+            val gestureDetector =
+                GestureDetector(LocalContext.current, object : GestureDetector.SimpleOnGestureListener() {
+                    override fun onFling(
+                        e1: MotionEvent?,
+                        e2: MotionEvent,
+                        velocityX: Float,
+                        velocityY: Float
+                    ): Boolean {
+                        if (e1 != null) {
+                            if (e1.x - e2.x > 0) {
+                                goToNext()
+                            } else if (e1.x - e2.x < 0) {
+                                goToPrevious()
+                            }
+                        }
+                        return super.onFling(e1, e2, velocityX, velocityY)
+                    }
+                })
+
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -385,15 +403,28 @@ fun ConsumptionGraph(data: List<DataRecord>, dataDayLimit: Int) {
                                 selectedOptionDataDate.value,
                                 dataDayLimit
                             )
-                            legend.isEnabled = false
-                            getAxis(YAxis.AxisDependency.LEFT).textSize = 12f
                             animateXY(animationDuration, animationDuration)
-                            xAxis.setDrawGridLines(false)
+                            setOnTouchListener { _, event ->
+                                if (event.action == MotionEvent.ACTION_UP) {
+                                    performClick()
+                                }
+                                gestureDetector.onTouchEvent(event)
+                            }
                         }
                     },
                     modifier = Modifier.fillMaxSize()
                 )
             }
+
+
+            Text(
+                text = "( Avec une limite de $dataDayLimit Gb par mois )",
+                textAlign = TextAlign.Center,
+                fontStyle = FontStyle.Italic,
+                color = Color.Gray,
+                fontSize = 10.sp,
+                modifier = Modifier.fillMaxWidth()
+            )
 
             Row(
                 modifier = Modifier
@@ -468,19 +499,20 @@ fun BarChart.setChart(
         else -> emptyMap()
     }
 
+
     val barEntries = sortedData.map { (key, value) ->
         BarEntry(key.toFloat(), value)
     }
 
-    val barEntry = BarDataSet(barEntries, "Données (GB)").apply {
+    val barEntry = BarDataSet(barEntries, "Données").apply {
         colors = barEntries.map { getColorBasedOnData(it.y, currentDate, selectedOption, dataDayLimit).toArgb() }
-        setDrawValues(false)
+        valueFormatter = CustomValueFormatter()
     }
 
     val barData = BarData(barEntry)
     data = barData
     barData.barWidth = 0.45f
-    barEntry.valueTextSize = 12f
+    barEntry.valueTextSize = 10f
     description.isEnabled = false
 
     val xAxis: XAxis = xAxis
@@ -492,11 +524,11 @@ fun BarChart.setChart(
         }
 
         "Mois" -> {
-            xAxis.valueFormatter = null // Utiliser le formateur d'axe par défaut
+            xAxis.valueFormatter = DayAxisValueFormatter()
         }
 
         "Jour" -> {
-            xAxis.valueFormatter = null // Utiliser le formateur d'axe par défaut
+            xAxis.valueFormatter = null
         }
     }
 
@@ -505,9 +537,20 @@ fun BarChart.setChart(
 
     val yAxisLeft: YAxis = axisLeft
     yAxisLeft.axisMinimum = 0f
+    yAxisLeft.valueFormatter = CustomYAxisFormatter()
 
     val yAxisRight: YAxis = axisRight
     yAxisRight.isEnabled = false
+
+    isDragEnabled = false
+    isScaleXEnabled = false
+    isScaleYEnabled = false
+    !isPinchZoomEnabled
+    isDoubleTapToZoomEnabled = false
+
+    legend.isEnabled = false
+    getAxis(YAxis.AxisDependency.LEFT).textSize = 10f
+    xAxis.setDrawGridLines(false)
 
     invalidate()
 }

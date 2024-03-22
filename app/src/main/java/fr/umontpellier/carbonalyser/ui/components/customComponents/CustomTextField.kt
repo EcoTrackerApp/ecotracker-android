@@ -15,10 +15,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import fr.umontpellier.carbonalyser.R
 
 @Composable
 fun CustomTextField(
@@ -32,7 +35,7 @@ fun CustomTextField(
         modifier = modifier
             .background(Color.White, RoundedCornerShape(8.dp))
             .border(1.dp, Color.Black, RoundedCornerShape(8.dp))
-            .padding(horizontal = 8.dp, vertical = 2.dp)
+            .padding(horizontal = 16.dp, vertical = 2.dp)
             .wrapContentWidth()
             .height(30.dp)
     ) {
@@ -45,7 +48,7 @@ fun CustomTextField(
             maxLines = 1,
         )
         Icon(
-            imageVector = if (isMenuExpanded) Icons.Default.ExitToApp else Icons.Default.ArrowDropDown,
+            painter = if (isMenuExpanded) painterResource(id = R.drawable.ic_arrow_drop_up) else rememberVectorPainter(image = Icons.Default.ArrowDropDown),
             contentDescription = "Dropdown Icon",
             tint = Color.Black,
             modifier = Modifier.size(20.dp)
