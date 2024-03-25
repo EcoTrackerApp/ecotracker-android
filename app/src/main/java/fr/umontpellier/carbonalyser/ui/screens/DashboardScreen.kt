@@ -1,19 +1,64 @@
 package fr.umontpellier.carbonalyser.ui.screens
 
+import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.runtime.Composable
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import fr.umontpellier.carbonalyser.R
+import fr.umontpellier.carbonalyser.android.Connectivity
+import fr.umontpellier.carbonalyser.android.PackageNetworkStats
+import fr.umontpellier.carbonalyser.android.packageNetworkStatsManager
+import fr.umontpellier.carbonalyser.model.ModelOptions
+import fr.umontpellier.carbonalyser.model.ModelService
 import fr.umontpellier.carbonalyser.ui.components.tiles.DynamicTile
 import fr.umontpellier.carbonalyser.ui.components.tiles.ValueTile
 import fr.umontpellier.carbonalyser.ui.theme.EcoTrackerTheme
+import fr.umontpellier.carbonalyser.util.format
+import java.time.Instant
+import java.time.temporal.ChronoUnit
+
+@Composable
+fun DashboardWeek(context: Context) {
+    val end = Instant.now()
+    val start = end.minus(7, ChronoUnit.DAYS)
+
+    var isLoading by remember { mutableStateOf(false) }
+    var dataCollection by remember { mutableStateOf(emptyList<PackageNetworkStats>()) }
+
+    LaunchedEffect(null) {
+        isLoading = true
+        dataCollection = context.packageNetworkStatsManager.collect(
+            start,
+            end,
+            arrayOf(Connectivity.WIFI, Connectivity.MOBILE)
+        )
+        isLoading = false
+    }
+
+    if (isLoading) {
+        CircularProgressIndicator()
+    } else {
+        DashboardScreen(
+            dataCollection.map { ModelService["1byte"]!!.estimate(it, ModelOptions()) }
+                .sumOf { it.bytesSentCO2 + it.bytesReceivedCO2 } / 1e3,
+            0.0,
+            7.0,
+            0.0,
+            dataCollection.sumOf { it.bytesReceived } / 1e9,
+            dataCollection.sumOf { it.bytesSent } / 1e9,
+            0.0,
+            0.0
+        )
+    }
+}
 
 @Composable
 fun DashboardScreen(
@@ -72,7 +117,7 @@ fun DashboardScreen(
                 item {
                     DynamicTile(
                         logoResId = R.drawable.download_solid,
-                        firstText = "$downloadedData GB",
+                        firstText = "${downloadedData.format(2)} GB",
                         secondText = "Données téléchargées",
                         imageResId = R.drawable.image_download_tile,
                         imageOffSetX = 200,
@@ -82,7 +127,7 @@ fun DashboardScreen(
                 item {
                     DynamicTile(
                         logoResId = R.drawable.upload_solid,
-                        firstText = "$uploadedData GB",
+                        firstText = "${uploadedData.format(2)} GB",
                         secondText = "Données envoyées",
                         imageResId = R.drawable.image_upload_tile,
                         imageOffSetX = 210,

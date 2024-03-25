@@ -12,6 +12,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import fr.umontpellier.carbonalyser.ui.theme.EcoTrackerTheme
+import fr.umontpellier.carbonalyser.util.format
 
 @Composable
 fun ValueTile(
@@ -63,7 +64,7 @@ fun ValueTile(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "$globalEmission kgCO2e",
+                        text = "${globalEmission.format(2)} kgCO2e",
                         color = Color.White,
                         fontSize = 32.sp
                     )
