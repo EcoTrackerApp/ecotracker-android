@@ -2,7 +2,7 @@ package fr.umontpellier.carbonalyser.model
 
 object ModelService {
 
-    private val models = listOf<Model>()
+    private val models = listOf<Model>(OneByte)
         .associateBy { it.id }
 
     /**
