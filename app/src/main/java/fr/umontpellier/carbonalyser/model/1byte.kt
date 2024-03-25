@@ -34,9 +34,9 @@ object OneByte : Model {
     }
 
     override val id = "1byte"
-    override fun estimate(connectipkgNetStats: PackageNetworkStats, options: ModelOptions): ModelResult {
-        val bytesReceivedCO2 = perByte(connectipkgNetStats.bytesReceived.toDouble(), options.green)
-        val bytesSentCO2 = perByte(connectipkgNetStats.bytesSent.toDouble(), options.green)
-        return ModelResult(bytesReceivedCO2, bytesSentCO2)
+    override fun estimate(pkgNetStats: PackageNetworkStats, options: ModelOptions): ModelResult {
+        val bytesReceivedCO2 = perByte(pkgNetStats.bytesReceived.toDouble(), options.green)
+        val bytesSentCO2 = perByte(pkgNetStats.bytesSent.toDouble(), options.green)
+        return ModelResult(pkgNetStats, bytesReceivedCO2, bytesSentCO2)
     }
 }

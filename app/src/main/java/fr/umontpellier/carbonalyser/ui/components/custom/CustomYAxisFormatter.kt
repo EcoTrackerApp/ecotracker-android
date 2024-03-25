@@ -1,4 +1,4 @@
-package fr.umontpellier.carbonalyser.ui.components.customComponents
+package fr.umontpellier.carbonalyser.ui.components.custom
 
 import com.github.mikephil.charting.formatter.ValueFormatter
 

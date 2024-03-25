@@ -11,8 +11,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import fr.umontpellier.carbonalyser.R
-import fr.umontpellier.carbonalyser.ui.components.mainTiles.DynamicTile
-import fr.umontpellier.carbonalyser.ui.components.mainTiles.ValueTile
+import fr.umontpellier.carbonalyser.ui.components.tiles.DynamicTile
+import fr.umontpellier.carbonalyser.ui.components.tiles.ValueTile
 import fr.umontpellier.carbonalyser.ui.theme.EcoTrackerTheme
 
 @Composable

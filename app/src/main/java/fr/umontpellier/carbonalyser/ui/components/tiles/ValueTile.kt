@@ -1,4 +1,4 @@
-package fr.umontpellier.carbonalyser.ui.components.mainTiles
+package fr.umontpellier.carbonalyser.ui.components.tiles
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Card

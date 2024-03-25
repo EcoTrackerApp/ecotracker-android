@@ -1,9 +1,8 @@
-package fr.umontpellier.carbonalyser.ui.components.dataGraph
+package fr.umontpellier.carbonalyser.ui.components.graph
 
 
 import android.view.GestureDetector
 import android.view.MotionEvent
-import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -15,7 +14,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
@@ -29,10 +27,9 @@ import com.github.mikephil.charting.components.YAxis
 import com.github.mikephil.charting.data.BarData
 import com.github.mikephil.charting.data.BarDataSet
 import com.github.mikephil.charting.data.BarEntry
-import fr.umontpellier.carbonalyser.data.model.DataOrigin
-import fr.umontpellier.carbonalyser.data.model.DataRecord
-import fr.umontpellier.carbonalyser.data.model.DataType
-import fr.umontpellier.carbonalyser.ui.components.customComponents.*
+import fr.umontpellier.carbonalyser.model.Model
+import fr.umontpellier.carbonalyser.model.ModelResult
+import fr.umontpellier.carbonalyser.ui.components.custom.*
 import fr.umontpellier.carbonalyser.ui.theme.EcoTrackerTheme
 import fr.umontpellier.carbonalyser.util.DayAxisValueFormatter
 import fr.umontpellier.carbonalyser.util.GenerateRandomData.Companion.generateRandomDataForYear
@@ -42,10 +39,21 @@ import java.time.LocalDateTime
 import java.time.Year
 import kotlin.math.pow
 
+enum class DataType {
+    WIFI,
+    MOBILE,
+    ALL
+}
+
+enum class DataOrigin {
+    SEND,
+    RECEIVED,
+    ALL
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ConsumptionGraph(data: List<DataRecord>, dataDayLimit: Int) {
+fun ConsumptionGraph(data: List<ModelResult>, dataDayLimit: Int) {
     // Chart
     val chart = remember { mutableStateOf<BarChart?>(null) }
     val animationDuration = 1000
@@ -53,7 +61,7 @@ fun ConsumptionGraph(data: List<DataRecord>, dataDayLimit: Int) {
     // GroupButton
     var selectedIndexDataType by remember { mutableIntStateOf(2) }
     var selectedIndexDataOrigin by remember { mutableIntStateOf(2) }
-    val dataTypeOption = listOf(DataType.WIFI, DataType.MOBILE_DATA, DataType.ALL)
+    val dataTypeOption = listOf(DataType.WIFI, DataType.MOBILE, DataType.ALL)
     val dataOriginOption = listOf(DataOrigin.SEND, DataOrigin.RECEIVED, DataOrigin.ALL)
 
     // Dropdown
@@ -485,7 +493,7 @@ fun getColorBasedOnData(
 
 
 fun BarChart.setChart(
-    dataList: List<DataRecord>,
+    dataList: List<ModelResult>,
     currentDate: LocalDateTime,
     dataType: DataType,
     dataOrigin: DataOrigin,
@@ -557,27 +565,27 @@ fun BarChart.setChart(
 
 
 fun sortDataByMonth(
-    data: List<DataRecord>,
+    data: List<ModelResult>,
     currentDate: LocalDateTime,
     dataType: DataType,
     dataOrigin: DataOrigin
 ): Map<Int, Float> {
     val sortedData = mutableMapOf<Int, Float>().apply { (1..12).forEach { put(it, 0f) } }
 
-    data.forEach { (itDate, itDataType, itOrigin, itValue) ->
-        if ((dataOrigin == DataOrigin.ALL || itOrigin == dataOrigin) &&
-            (dataType == DataType.ALL || itDataType == dataType) &&
-            itDate.year == currentDate.year
-        ) {
-            sortedData.compute(itDate.monthValue) { _, oldValue -> oldValue!! + itValue }
-        }
+    /**data.forEach { (itDate, itDataType, itOrigin, itValue) ->
+    if ((dataOrigin == DataOrigin.ALL || itOrigin == dataOrigin) &&
+    (dataType == DataType.ALL || itDataType == dataType) &&
+    itDate.year == currentDate.year
+    ) {
+    sortedData.compute(itDate.monthValue) { _, oldValue -> oldValue!! + itValue }
     }
+    }**/
 
     return sortedData
 }
 
 fun sortDataByDay(
-    data: List<DataRecord>,
+    data: List<ModelResult>,
     currentDate: LocalDateTime,
     dataType: DataType,
     dataOrigin: DataOrigin
@@ -591,37 +599,37 @@ fun sortDataByDay(
         }
     }
 
-    data.forEach { (itDate, itDataType, itOrigin, itValue) ->
-        if ((dataOrigin == DataOrigin.ALL || itOrigin == dataOrigin) &&
-            (dataType == DataType.ALL || itDataType == dataType) &&
-            itDate.year == currentDate.year &&
-            itDate.month == currentDate.month
-        ) {
-            sortedData.compute(itDate.dayOfMonth) { _, oldValue -> oldValue!! + itValue }
-        }
+    /**data.forEach { (pkgNetStats, received, sent) ->
+    if ((dataOrigin == DataOrigin.ALL || pkgNetStats.connectivity.name == dataType.name) &&
+    (dataType == DataType.ALL || itDataType == dataType) &&
+    itDate.year == currentDate.year &&
+    itDate.month == currentDate.month
+    ) {
+    sortedData.compute(itDate.dayOfMonth) { _, oldValue -> oldValue!! + itValue }
     }
+    }**/
 
     return sortedData
 }
 
 fun sortDataByHour(
-    data: List<DataRecord>,
+    data: List<ModelResult>,
     currentDate: LocalDateTime,
     dataType: DataType,
     dataOrigin: DataOrigin
 ): Map<Int, Float> {
     val sortedData = mutableMapOf<Int, Float>().apply { (0..23).forEach { put(it, 0f) } }
 
-    data.forEach { (itDate, itDataType, itOrigin, itValue) ->
-        if ((dataOrigin == DataOrigin.ALL || itOrigin == dataOrigin) &&
-            (dataType == DataType.ALL || itDataType == dataType) &&
-            itDate.year == currentDate.year &&
-            itDate.month == currentDate.month &&
-            itDate.dayOfMonth == currentDate.dayOfMonth
-        ) {
-            sortedData.compute(itDate.hour) { _, oldValue -> oldValue!! + itValue }
-        }
+    /**data.forEach { (itDate, itDataType, itOrigin, itValue) ->
+    if ((dataOrigin == DataOrigin.ALL || itOrigin == dataOrigin) &&
+    (dataType == DataType.ALL || itDataType == dataType) &&
+    itDate.year == currentDate.year &&
+    itDate.month == currentDate.month &&
+    itDate.dayOfMonth == currentDate.dayOfMonth
+    ) {
+    sortedData.compute(itDate.hour) { _, oldValue -> oldValue!! + itValue }
     }
+    }**/
 
     return sortedData
 }

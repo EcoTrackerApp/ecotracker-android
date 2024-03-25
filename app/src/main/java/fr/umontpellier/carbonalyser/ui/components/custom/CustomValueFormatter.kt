@@ -1,7 +1,6 @@
-package fr.umontpellier.carbonalyser.ui.components.customComponents
+package fr.umontpellier.carbonalyser.ui.components.custom
 
 import com.github.mikephil.charting.formatter.ValueFormatter
-import kotlin.math.roundToInt
 
 class CustomValueFormatter : ValueFormatter() {
     override fun getFormattedValue(value: Float): String {
