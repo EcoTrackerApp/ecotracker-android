@@ -12,8 +12,10 @@ interface Model {
     /**
      * Estimates the emissions of CO2 from a [PackageNetworkStats] using this model.
      */
-    fun estimate(connectipkgNetStats: PackageNetworkStats): ModelResult
+    fun estimate(connectipkgNetStats: PackageNetworkStats, options: ModelOptions): ModelResult
 
 }
 
-data class ModelResult(val bytesSentEmission: Long, val bytesReceivedEmission: Long)
+data class ModelOptions(val green: Boolean = false)
+
+data class ModelResult(val bytesReceivedCO2: Double, val bytesSentCO2: Double)
