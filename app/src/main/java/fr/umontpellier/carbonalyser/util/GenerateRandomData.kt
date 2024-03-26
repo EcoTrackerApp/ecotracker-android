@@ -18,8 +18,7 @@ class GenerateRandomData {
             while (currentDate <= endDate) {
                 val dataType = when (Random.nextInt(10)) {
                     in 0..3 -> DataType.WIFI
-                    in 4..10 -> DataType.MOBILE_DATA
-                    else -> DataType.CONNECTION_SHARING
+                    else -> DataType.MOBILE_DATA
                 }
 
                 val randomSent = generateRandomValue(dataType, DataOrigin.SEND, currentDate.dayOfMonth)

@@ -2,18 +2,23 @@ package fr.umontpellier.carbonalyser.ui.components.dataPie
 
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.charts.PieChart
+import com.github.mikephil.charting.components.Legend
 import com.github.mikephil.charting.data.*
 import com.github.mikephil.charting.formatter.PercentFormatter
 import com.github.mikephil.charting.utils.ColorTemplate
@@ -27,115 +32,94 @@ import fr.umontpellier.carbonalyser.util.GenerateRandomDataPie
 import fr.umontpellier.carbonalyser.util.MonthTraduction
 import java.time.LocalDateTime
 import java.time.Year
+import fr.umontpellier.carbonalyser.data.model.DataColors
+import fr.umontpellier.carbonalyser.util.CustomPercentFormatter
 
-
-fun PieChart.setChart(dataList: List<DataPie>,
-                      currentDate: LocalDateTime,
-                      dataType: DataType,
-                      selectedOption: String) {
-    val sortedData = when (selectedOption) {
+fun PieChart.setChart(dataList: List<DataPie>, currentDate: LocalDateTime, dataType: DataType, selectedOption: String) {
+    val preSortedData = when (selectedOption) {
         "Année" -> sortDataByMonth(dataList, currentDate, dataType)
         "Mois" -> sortDataByDay(dataList, currentDate, dataType)
         "Jour" -> sortDataByHour(dataList, currentDate, dataType)
-        else -> emptyMap()
-    }
-    val pieEntries = sortedData.map { (key, value) ->
-        PieEntry(key.toFloat(), value)
+        else -> dataList // Si aucune des options ci-dessus, on ne change pas les données
     }
 
-    val pieEntry = PieDataSet(pieEntries, "Données (GB)")
-    val pieData = PieData(pieEntry)
-    this.data = pieData
+    // Tri et regroupement des données pré-triées par `dataName`, puis sommation des valeurs pour chaque `dataName`.
+    val sortedAndSummedData = preSortedData
+        .sortedBy { it.dataName } // Tri par `dataName`
+        .groupBy { it.dataName }
+        .map { (name, list) ->
+            PieEntry(
+                list.sumOf { it.value.toDouble() }.toFloat(), // Somme des valeurs, convertie en Float
+                name.toString() // Utilisation du nom d'application comme label
+            )
+        }
+    // Création de PieDataSet avec les données triées et sommées.
+    val pieDataSet = PieDataSet(sortedAndSummedData, "Données par Application").apply {
+        colors = listOf(
+            DataColors.PastelRed.toArgb(),
+            DataColors.PastelGreen.toArgb(),
+            DataColors.PastelBlue.toArgb(),
+            DataColors.PastelPurple.toArgb(),
+            DataColors.PastelOrange.toArgb(),
+            DataColors.PastelPink.toArgb(),
+            DataColors.PastelBrown.toArgb(),
+            DataColors.PastelCyan.toArgb(),
+            DataColors.PastelLime.toArgb(),
+            DataColors.PastelMagenta.toArgb(),
+            DataColors.PastelTeal.toArgb(),
+            DataColors.PastelLavender.toArgb(),
+            DataColors.PastelMaroon.toArgb(),
+            DataColors.PastelOlive.toArgb(),
+            DataColors.PastelCoral.toArgb(),
+            DataColors.PastelGold.toArgb(),
+            DataColors.PastelSkyBlue.toArgb()
+        )
+        sliceSpace = 2f
+        valueTextSize = 17f
+        valueTextColor = Color.White.toArgb()
+        valueFormatter = CustomPercentFormatter(this@setChart)
+    }
 
+    // Configuration supplémentaire du diagramme
+    this.data = PieData(pieDataSet)
     setUsePercentValues(true)
     setDrawEntryLabels(false)
     isDrawHoleEnabled = true
-
-    holeRadius = 50f
+    holeRadius = 40f
     transparentCircleRadius = 10f
-
-    //val dataSet = PieDataSet(pieEntries, chartLabel)
-    pieEntry.colors = ColorTemplate.COLORFUL_COLORS.toList()
-    pieEntry.sliceSpace = 2f
-    pieEntry.valueTextSize = 16f
-    pieEntry.valueTextColor = Color.White.toArgb()
-    pieEntry.valueFormatter = PercentFormatter(this)
-    pieEntry.setDrawValues(true)
     legend.isEnabled = true
-    //legend.orientation = Legend.LegendOrientation.VERTICAL
-    //legend.horizontalAlignment = Legend.LegendHorizontalAlignment.LEFT
+    description.isEnabled = false
 
-    invalidate() // refresh the chart
-
+    invalidate() // Rafraîchir le diagramme
 }
+
 fun sortDataByMonth(
     data: List<DataPie>,
     currentDate: LocalDateTime,
     dataType: DataType
-): Map<Int, Float> {
-    val sortedData = mutableMapOf<Int, Float>().apply { (1..12).forEach { put(it, 0f) } }
-
-    data.forEach { (itDate, itDataType, itName, itValue) ->
-        if (
-            (dataType == DataType.ALL || itDataType == dataType) &&
-            itDate.year == currentDate.year
-        ) {
-            sortedData.compute(itDate.monthValue) { _, oldValue -> oldValue!! + itValue }
-        }
-    }
-
-    return sortedData
+): List<DataPie> {
+    return data.filter { (dataType == DataType.ALL || it.dataType == dataType) && it.date.year == currentDate.year }
 }
 
 fun sortDataByDay(
     data: List<DataPie>,
     currentDate: LocalDateTime,
     dataType: DataType
-): Map<Int, Float> {
-    val sortedData = mutableMapOf<Int, Float>().apply {
-        (1..currentDate.month.length(Year.of(currentDate.year).isLeap)).forEach {
-            put(
-                it,
-                0f
-            )
-        }
-    }
-    data.forEach { (itDate, itDataType, itName, itValue) ->
-        if (
-            (dataType == DataType.ALL || itDataType == dataType) &&
-            itDate.year == currentDate.year &&
-            itDate.month == currentDate.month
-        ) {
-            sortedData.compute(itDate.dayOfMonth) { _, oldValue -> oldValue!! + itValue }
-        }
-    }
-
-    return sortedData
+): List<DataPie> {
+    return data.filter { (dataType == DataType.ALL || it.dataType == dataType) && it.date.year == currentDate.year && it.date.month == currentDate.month }
 }
 
 fun sortDataByHour(
     data: List<DataPie>,
     currentDate: LocalDateTime,
     dataType: DataType
-): Map<Int, Float> {
-    val sortedData = mutableMapOf<Int, Float>().apply { (0..23).forEach { put(it, 0f) } }
-
-    data.forEach { (itDate, itDataType, itName, itValue) ->
-        if (
-            (dataType == DataType.ALL || itDataType == dataType) &&
-            itDate.year == currentDate.year &&
-            itDate.month == currentDate.month &&
-            itDate.dayOfMonth == currentDate.dayOfMonth
-        ) {
-            sortedData.compute(itDate.hour) { _, oldValue -> oldValue!! + itValue }
-        }
-    }
-
-    return sortedData
+): List<DataPie> {
+    return data.filter { (dataType == DataType.ALL || it.dataType == dataType) && it.date.year == currentDate.year && it.date.month == currentDate.month && it.date.dayOfMonth == currentDate.dayOfMonth }
 }
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CreatePieChart(dataEntries: List<PieEntry>, chartLabel: String, data: List<DataPie>) {
+fun CreatePieChart(data: List<DataPie>) {
     // Chart
     val chart = remember { mutableStateOf<PieChart?>(null) }
 
@@ -260,7 +244,7 @@ fun CreatePieChart(dataEntries: List<PieEntry>, chartLabel: String, data: List<D
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) { // Row for the title
                 Text(
@@ -376,15 +360,37 @@ fun CreatePieChart(dataEntries: List<PieEntry>, chartLabel: String, data: List<D
                                 selectedOptionDataDate.value
                             )
 
-
-                            //legend.orientation = Legend.LegendOrientation.VERTICAL
-                            //legend.horizontalAlignment = Legend.LegendHorizontalAlignment.LEFT
-
                         }
                     },
                     modifier = Modifier
                         .fillMaxSize()
                 )
+            }
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(30.dp)
+                    .padding(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(
+                    onClick = { goToPrevious() },
+                    modifier = Modifier.weight(0.2f)
+                ) {
+                    Icon(Icons.Default.ArrowBack, contentDescription = "Précédent")
+                }
+                Text(
+                    text = selectedDateText,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                )
+                IconButton(
+                    onClick = { goToNext() },
+                    modifier = Modifier.weight(0.2f)
+                ) {
+                    Icon(Icons.Default.ArrowForward, contentDescription = "Suivant")
+                }
             }
         }
     }
@@ -404,7 +410,7 @@ fun PreviewPieChart() {
             PieEntry(22.1f, "Gmail")
         )
 
-        val randomData = GenerateRandomDataPie.generateRandomDataForYear()
-        CreatePieChart(dataEntries, "App Usage", randomData)
+        val randomData = GenerateRandomDataPie.generateRandomDataForYears()
+        CreatePieChart(randomData)
     }
 }

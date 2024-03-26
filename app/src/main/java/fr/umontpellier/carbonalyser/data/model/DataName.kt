@@ -8,5 +8,18 @@ enum class DataName {
     Snapchat,
     WhatsApp,
     Instagram,
-    Twitter
+    Twitter,
+    Facebook,
+    Messenger,
+    Netflix,
+    Spotify,
+    Amazon,
+    PrimeVideo,
+    DisneyPlus,
+    TwitchMusic,
+    YouTubeMusic,
+    Deezer,
+    SoundCloud,
+    AppleMusic,
+    GooglePlayMusic
 }
