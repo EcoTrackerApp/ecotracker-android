@@ -13,13 +13,4 @@ enum class DataName {
     Messenger,
     Netflix,
     Spotify,
-    Amazon,
-    PrimeVideo,
-    DisneyPlus,
-    TwitchMusic,
-    YouTubeMusic,
-    Deezer,
-    SoundCloud,
-    AppleMusic,
-    GooglePlayMusic
 }
