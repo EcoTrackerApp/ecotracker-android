@@ -9,8 +9,5 @@ enum class DataName {
     WhatsApp,
     Instagram,
     Twitter,
-    Facebook,
-    Messenger,
-    Netflix,
     Spotify,
 }

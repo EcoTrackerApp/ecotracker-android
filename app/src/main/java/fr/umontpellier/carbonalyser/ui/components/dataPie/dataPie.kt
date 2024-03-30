@@ -1,6 +1,7 @@
 package fr.umontpellier.carbonalyser.ui.components.dataPie
 
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -11,6 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -44,7 +46,7 @@ fun PieChart.setChart(dataList: List<DataPie>, currentDate: LocalDateTime, dataT
     }
 
     // Tri et regroupement des données pré-triées par `dataName`, puis sommation des valeurs pour chaque `dataName`.
-    val sortedAndSummedData = preSortedData
+    var sortedAndSummedData = preSortedData
         .sortedBy { it.dataName } // Tri par `dataName`
         .groupBy { it.dataName }
         .map { (name, list) ->
@@ -53,27 +55,61 @@ fun PieChart.setChart(dataList: List<DataPie>, currentDate: LocalDateTime, dataT
                 name.toString() // Utilisation du nom d'application comme label
             )
         }
+
+    // Si DataType est "ALL", regrouper les données par nom d'application, indépendamment du type de données
+    if (dataType == DataType.ALL) {
+        sortedAndSummedData = sortedAndSummedData
+            .groupBy { it.label }
+            .map { (name, list) ->
+                PieEntry(
+                    list.sumByDouble { it.value.toDouble() }.toFloat(), // Somme des valeurs, convertie en Float
+                    name // Utilisation du nom d'application comme label
+                )
+            }
+    }
+
+    // Associer des couleurs spécifiques à chaque application
+    val colorMap: Map<String, Color> = sortedAndSummedData.associate { entry ->
+        entry.label to DataColors.getColor(sortedAndSummedData.indexOf(entry))
+    }
+
+    // Création de la liste de couleurs en utilisant colorMap
+    val colors = sortedAndSummedData.map { entry ->
+        colorMap[entry.label]?.toArgb() ?: DataColors.getDefaultColor().toArgb()
+    }
+
+    // Tri des données par ordre décroissant
+   // sortedAndSummedData = sortedAndSummedData.sortedByDescending { it.value }
+
+    // Convertir la liste d'entiers en MutableList<Int>
+    val mutableColors: MutableList<Int> = colors.toMutableList()
+
     // Création de PieDataSet avec les données triées et sommées.
     val pieDataSet = PieDataSet(sortedAndSummedData, "Données par Application").apply {
-        colors = listOf(
-            DataColors.PastelRed.toArgb(),
-            DataColors.PastelGreen.toArgb(),
-            DataColors.PastelBlue.toArgb(),
-            DataColors.PastelPurple.toArgb(),
-            DataColors.PastelOrange.toArgb(),
-            DataColors.PastelPink.toArgb(),
-            DataColors.PastelBrown.toArgb(),
-            DataColors.PastelCyan.toArgb(),
-            DataColors.PastelLime.toArgb(),
-            DataColors.PastelMagenta.toArgb(),
-            DataColors.PastelTeal.toArgb(),
-            DataColors.PastelLavender.toArgb(),
-            DataColors.PastelMaroon.toArgb(),
-            DataColors.PastelOlive.toArgb(),
-            DataColors.PastelCoral.toArgb(),
-            DataColors.PastelGold.toArgb(),
-            DataColors.PastelSkyBlue.toArgb()
-        )
+
+        this.colors = mutableColors
+
+        // Utilisation des couleurs spécifiques
+
+//        colors = listOf(
+//            DataColors.PastelRed.toArgb(),
+//            DataColors.PastelGreen.toArgb(),
+//            DataColors.PastelBlue.toArgb(),
+//            DataColors.PastelPurple.toArgb(),
+//            DataColors.PastelOrange.toArgb(),
+//            DataColors.PastelPink.toArgb(),
+//            DataColors.PastelBrown.toArgb(),
+//            DataColors.PastelCyan.toArgb(),
+//            DataColors.PastelLime.toArgb(),
+//            DataColors.PastelMagenta.toArgb(),
+//            DataColors.PastelTeal.toArgb(),
+//            DataColors.PastelLavender.toArgb(),
+//            DataColors.PastelMaroon.toArgb(),
+//            DataColors.PastelOlive.toArgb(),
+//            DataColors.PastelCoral.toArgb(),
+//            DataColors.PastelGold.toArgb(),
+//            DataColors.PastelSkyBlue.toArgb()
+//        )
         sliceSpace = 2f
         valueTextSize = 17f
         valueTextColor = Color.White.toArgb()
@@ -230,6 +266,9 @@ fun CreatePieChart(data: List<DataPie>) {
             else -> {}
         }
     }
+
+
+    Column {
     Card(
         colors = CardDefaults.cardColors(Color.White),
         modifier = Modifier
@@ -365,6 +404,7 @@ fun CreatePieChart(data: List<DataPie>) {
                     modifier = Modifier
                         .fillMaxSize()
                 )
+
             }
             Row(
                 modifier = Modifier
@@ -394,23 +434,67 @@ fun CreatePieChart(data: List<DataPie>) {
             }
         }
     }
+
+    Card(
+        colors = CardDefaults.cardColors(Color.White),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Text(
+                text = "Légende du Graphe",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+
+            // Ajoutez ici les éléments de votre légende
+            LegendItem("Application 1", Color.Red)
+            LegendItem("Application 2", Color.Green)
+            LegendItem("Application 3", Color.Blue)
+            // Ajoutez plus d'éléments si nécessaire
+        }
+    }
 }
+}
+@Composable
+fun LegendItem(label: String, color: Color) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.padding(bottom = 4.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .size(16.dp)
+                .background(color)
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(text = label)
+    }
+}
+
+
+
 @Preview(showBackground = false)
 @Composable
 fun PreviewPieChart() {
     EcoTrackerTheme {
-        val dataEntries = listOf(
-            PieEntry(18.5f, "Twitch"),
-            PieEntry(26.7f, "YouTube"),
-            PieEntry(24.0f, "TikTok"),
-            PieEntry(30.8f, "Chrome"),
-            PieEntry(15.6f, "Snapchat"),
-            PieEntry(10.2f, "WhatsApp"),
-            PieEntry(20.9f, "Instagram"),
-            PieEntry(22.1f, "Gmail")
-        )
+//        val dataEntries = listOf(
+//            PieEntry(18.5f, "Twitch"),
+//            PieEntry(26.7f, "YouTube"),
+//            PieEntry(24.0f, "TikTok"),
+//            PieEntry(30.8f, "Chrome"),
+//            PieEntry(15.6f, "Snapchat"),
+//            PieEntry(10.2f, "WhatsApp"),
+//            PieEntry(20.9f, "Instagram"),
+//            PieEntry(22.1f, "Gmail")
+//        )
 
         val randomData = GenerateRandomDataPie.generateRandomDataForYears()
         CreatePieChart(randomData)
+
     }
 }

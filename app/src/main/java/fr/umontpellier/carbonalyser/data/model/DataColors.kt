@@ -1,9 +1,11 @@
 package fr.umontpellier.carbonalyser.data.model
 
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 
 class DataColors {
     companion object {
+
         val PastelRed = Color(0xFFFF6961)
         val PastelGreen = Color(0xFF77DD77)
         val PastelBlue = Color(0xFFAEC6CF)
@@ -22,6 +24,18 @@ class DataColors {
         val PastelGold = Color(0xFFFFD700)
         val PastelSkyBlue = Color(0xFF87CEEB)
 
+        val colorsList = listOf(
+            PastelRed, PastelGreen, PastelBlue, PastelPurple, PastelOrange, PastelPink,
+            PastelBrown, PastelCyan, PastelLime, PastelMagenta, PastelTeal, PastelLavender,
+            PastelMaroon, PastelOlive, PastelCoral, PastelGold, PastelSkyBlue
+        )
+        fun getColor(index: Int): Color {
+            return colorsList[index % colorsList.size]
+        }
+
+        fun getDefaultColor(): Color {
+            return Color(0xFF000000)
+        }
 
     }
 }
