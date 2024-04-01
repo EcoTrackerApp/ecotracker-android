@@ -18,32 +18,48 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
-import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.charts.PieChart
-import com.github.mikephil.charting.components.Legend
 import com.github.mikephil.charting.data.*
-import com.github.mikephil.charting.formatter.PercentFormatter
-import com.github.mikephil.charting.utils.ColorTemplate
 import fr.umontpellier.carbonalyser.data.model.*
 import fr.umontpellier.carbonalyser.ui.components.customComponents.CustomDropdownMenu
 import fr.umontpellier.carbonalyser.ui.components.customComponents.CustomGroupButton
 import fr.umontpellier.carbonalyser.ui.components.customComponents.CustomTextField
-import fr.umontpellier.carbonalyser.ui.components.dataGraph.*
 import fr.umontpellier.carbonalyser.ui.theme.EcoTrackerTheme
 import fr.umontpellier.carbonalyser.util.GenerateRandomDataPie
 import fr.umontpellier.carbonalyser.util.MonthTraduction
 import java.time.LocalDateTime
-import java.time.Year
 import fr.umontpellier.carbonalyser.data.model.DataColors
 import fr.umontpellier.carbonalyser.util.CustomPercentFormatter
+import kotlin.math.roundToInt
 
-fun PieChart.setChart(dataList: List<DataPie>, currentDate: LocalDateTime, dataType: DataType, selectedOption: String) {
-    val preSortedData = when (selectedOption) {
-        "Année" -> sortDataByMonth(dataList, currentDate, dataType)
-        "Mois" -> sortDataByDay(dataList, currentDate, dataType)
-        "Jour" -> sortDataByHour(dataList, currentDate, dataType)
-        else -> dataList // Si aucune des options ci-dessus, on ne change pas les données
+@Composable
+fun LegendItem(label: String, value: Float, total: Float, color: Color) {
+    val percentage = (value / total) * 100
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.padding(bottom = 4.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .size(16.dp)
+                .background(color)
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(text = "$label: $value (${percentage.roundToInt()}%)")
     }
+}
+
+fun trimData(data: List<DataPie>, currentDate: LocalDateTime, dataType: DataType, selectedOption: String): List<PieEntry> {
+    val preSortedData = when (selectedOption) {
+        "Année" -> sortDataByMonth(data, currentDate, dataType)
+        "Mois" -> sortDataByDay(data, currentDate, dataType)
+        "Jour" -> sortDataByHour(data, currentDate, dataType)
+        else -> data // Si aucune des options ci-dessus, on ne change pas les données
+    }
+
+    //Tri par valeur d'applications pour chaque `dataName`
+
+
 
     // Tri et regroupement des données pré-triées par `dataName`, puis sommation des valeurs pour chaque `dataName`.
     var sortedAndSummedData = preSortedData
@@ -55,6 +71,7 @@ fun PieChart.setChart(dataList: List<DataPie>, currentDate: LocalDateTime, dataT
                 name.toString() // Utilisation du nom d'application comme label
             )
         }
+
 
     // Si DataType est "ALL", regrouper les données par nom d'application, indépendamment du type de données
     if (dataType == DataType.ALL) {
@@ -68,6 +85,15 @@ fun PieChart.setChart(dataList: List<DataPie>, currentDate: LocalDateTime, dataT
             }
     }
 
+
+    // Trier les données par valeur
+    sortedAndSummedData = sortedAndSummedData.sortedByDescending { it.value }
+
+    return sortedAndSummedData
+}
+fun PieChart.setChart(sortedAndSummedData: List<PieEntry>) {
+
+
     // Associer des couleurs spécifiques à chaque application
     val colorMap: Map<String, Color> = sortedAndSummedData.associate { entry ->
         entry.label to DataColors.getColor(sortedAndSummedData.indexOf(entry))
@@ -78,11 +104,10 @@ fun PieChart.setChart(dataList: List<DataPie>, currentDate: LocalDateTime, dataT
         colorMap[entry.label]?.toArgb() ?: DataColors.getDefaultColor().toArgb()
     }
 
-    // Tri des données par ordre décroissant
-   // sortedAndSummedData = sortedAndSummedData.sortedByDescending { it.value }
 
     // Convertir la liste d'entiers en MutableList<Int>
     val mutableColors: MutableList<Int> = colors.toMutableList()
+
 
     // Création de PieDataSet avec les données triées et sommées.
     val pieDataSet = PieDataSet(sortedAndSummedData, "Données par Application").apply {
@@ -91,25 +116,7 @@ fun PieChart.setChart(dataList: List<DataPie>, currentDate: LocalDateTime, dataT
 
         // Utilisation des couleurs spécifiques
 
-//        colors = listOf(
-//            DataColors.PastelRed.toArgb(),
-//            DataColors.PastelGreen.toArgb(),
-//            DataColors.PastelBlue.toArgb(),
-//            DataColors.PastelPurple.toArgb(),
-//            DataColors.PastelOrange.toArgb(),
-//            DataColors.PastelPink.toArgb(),
-//            DataColors.PastelBrown.toArgb(),
-//            DataColors.PastelCyan.toArgb(),
-//            DataColors.PastelLime.toArgb(),
-//            DataColors.PastelMagenta.toArgb(),
-//            DataColors.PastelTeal.toArgb(),
-//            DataColors.PastelLavender.toArgb(),
-//            DataColors.PastelMaroon.toArgb(),
-//            DataColors.PastelOlive.toArgb(),
-//            DataColors.PastelCoral.toArgb(),
-//            DataColors.PastelGold.toArgb(),
-//            DataColors.PastelSkyBlue.toArgb()
-//        )
+
         sliceSpace = 2f
         valueTextSize = 17f
         valueTextColor = Color.White.toArgb()
@@ -125,6 +132,7 @@ fun PieChart.setChart(dataList: List<DataPie>, currentDate: LocalDateTime, dataT
     transparentCircleRadius = 10f
     legend.isEnabled = true
     description.isEnabled = false
+
 
     invalidate() // Rafraîchir le diagramme
 }
@@ -156,11 +164,16 @@ fun sortDataByHour(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreatePieChart(data: List<DataPie>) {
+
     // Chart
     val chart = remember { mutableStateOf<PieChart?>(null) }
 
     // GroupButton
     var selectedIndexDataType by remember { mutableIntStateOf(2) }
+
+    //var sortedDatas = remember { mutableStateOf<PieEntry?>(null) }
+
+    var sortedDatas = remember { mutableStateOf<List<PieEntry>>(emptyList()) }
 
     val dataTypeOption = listOf(DataType.WIFI, DataType.MOBILE_DATA, DataType.ALL)
 
@@ -189,12 +202,9 @@ fun CreatePieChart(data: List<DataPie>) {
             "Année" -> {
                 if (currentDate.value.year > 2022) {
                     currentDate.value = currentDate.value.minusYears(1)
-                    chart.value?.setChart(
-                        data,
-                        currentDate.value,
-                        dataTypeOption[selectedIndexDataType],
-                        selectedOptionDataDate.value,
-                    )
+                    sortedDatas.value = trimData(data, currentDate.value, dataTypeOption[selectedIndexDataType], selectedOptionDataDate.value)
+                    chart.value?.setChart(sortedDatas.value)
+                    //sortedDatas = updateLegend(data, selectedOptionDataDate.value, dataTypeOption[selectedIndexDataType], currentDate.value)
                 } else {
                     println("Date limite atteinte")
                 }
@@ -203,12 +213,9 @@ fun CreatePieChart(data: List<DataPie>) {
             "Mois" -> {
                 if (currentDate.value.year > 2022 || (currentDate.value.year == 2022 && currentDate.value.monthValue > 1)) {
                     currentDate.value = currentDate.value.minusMonths(1)
-                    chart.value?.setChart(
-                        data,
-                        currentDate.value,
-                        dataTypeOption[selectedIndexDataType],
-                        selectedOptionDataDate.value,
-                    )
+                    sortedDatas.value = trimData(data, currentDate.value, dataTypeOption[selectedIndexDataType], selectedOptionDataDate.value)
+                    chart.value?.setChart(sortedDatas.value)
+                    //sortedDatas = updateLegend(data, selectedOptionDataDate.value, dataTypeOption[selectedIndexDataType], currentDate.value)
                 } else {
                     println("Date limite atteinte")
                 }
@@ -217,12 +224,9 @@ fun CreatePieChart(data: List<DataPie>) {
             "Jour" -> {
                 if (currentDate.value.isAfter(LocalDateTime.of(2022, 1, 1, 0, 0))) {
                     currentDate.value = currentDate.value.minusDays(1)
-                    chart.value?.setChart(
-                        data,
-                        currentDate.value,
-                        dataTypeOption[selectedIndexDataType],
-                        selectedOptionDataDate.value
-                    )
+                    sortedDatas.value = trimData(data, currentDate.value, dataTypeOption[selectedIndexDataType], selectedOptionDataDate.value)
+                    chart.value?.setChart(sortedDatas.value)
+                    //sortedDatas = updateLegend(data, selectedOptionDataDate.value, dataTypeOption[selectedIndexDataType], currentDate.value)
                 } else {
                     println("Date limite atteinte")
                 }
@@ -235,32 +239,24 @@ fun CreatePieChart(data: List<DataPie>) {
         when (selectedOptionDataDate.value) {
             "Année" -> {
                 currentDate.value = currentDate.value.plusYears(1)
-                chart.value?.setChart(
-                    data,
-                    currentDate.value,
-                    dataTypeOption[selectedIndexDataType],
-                    selectedOptionDataDate.value
-                )
+                sortedDatas.value = trimData(data, currentDate.value, dataTypeOption[selectedIndexDataType], selectedOptionDataDate.value)
+                chart.value?.setChart(sortedDatas.value)
+                //sortedDatas = updateLegend(data, selectedOptionDataDate.value, dataTypeOption[selectedIndexDataType], currentDate.value)
+
             }
 
             "Mois" -> {
                 currentDate.value = currentDate.value.plusMonths(1)
-                chart.value?.setChart(
-                    data,
-                    currentDate.value,
-                    dataTypeOption[selectedIndexDataType],
-                    selectedOptionDataDate.value
-                )
+                sortedDatas.value = trimData(data, currentDate.value, dataTypeOption[selectedIndexDataType], selectedOptionDataDate.value)
+                chart.value?.setChart(sortedDatas.value)
+                //sortedDatas = updateLegend(data, selectedOptionDataDate.value, dataTypeOption[selectedIndexDataType], currentDate.value)
             }
 
             "Jour" -> {
                 currentDate.value = currentDate.value.plusDays(1)
-                chart.value?.setChart(
-                    data,
-                    currentDate.value,
-                    dataTypeOption[selectedIndexDataType],
-                    selectedOptionDataDate.value
-                )
+                sortedDatas.value = trimData(data, currentDate.value, dataTypeOption[selectedIndexDataType], selectedOptionDataDate.value)
+                chart.value?.setChart(sortedDatas.value)
+                //sortedDatas = updateLegend(data, selectedOptionDataDate.value, dataTypeOption[selectedIndexDataType], currentDate.value)
             }
 
             else -> {}
@@ -269,211 +265,183 @@ fun CreatePieChart(data: List<DataPie>) {
 
 
     Column {
-    Card(
-        colors = CardDefaults.cardColors(Color.White),
-        modifier = Modifier
-            .fillMaxWidth()
-            .aspectRatio(0.7f)
-            .padding(16.dp)
-    ) {
-        Column(
+        Card(
+            colors = CardDefaults.cardColors(Color.White),
             modifier = Modifier
+                .fillMaxWidth()
+                .aspectRatio(0.7f)
                 .padding(16.dp)
-                .fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) { // Row for the title
-                Text(
-                    text = "Consommation (Gb)",
-                    fontSize = 18.sp,
-                    modifier = Modifier.weight(1f)
+            Column(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) { // Row for the title
+                    Text(
+                        text = "Consommation (Gb)",
+                        fontSize = 18.sp,
+                        modifier = Modifier.weight(1f)
 
-                )
-                ExposedDropdownMenuBox(
-                    expanded = expanded.value,
-                    onExpandedChange = { expanded.value = !expanded.value },
-                    modifier = Modifier.height(30.dp)
-                ) {
-                    CustomTextField(
-                        value = selectedOptionDataDate.value,
-                        modifier = Modifier.menuAnchor(),
-                        isMenuExpanded = expanded.value
                     )
-
-                    CustomDropdownMenu(
+                    ExposedDropdownMenuBox(
                         expanded = expanded.value,
-                        onDismissRequest = { expanded.value = false },
-                        options = dataDateOption,
-                        onOptionSelected = { option ->
-                            selectedOptionDataDate.value = option
-                            expanded.value = false
-                            when (option) {
-                                "Année" -> {
-                                    chart.value?.setChart(
-                                        data,
-                                        currentDate.value,
-                                        dataTypeOption[selectedIndexDataType],
-                                        option
-                                    )
+                        onExpandedChange = { expanded.value = !expanded.value },
+                        modifier = Modifier.height(30.dp)
+                    ) {
+                        CustomTextField(
+                            value = selectedOptionDataDate.value,
+                            modifier = Modifier.menuAnchor(),
+                            isMenuExpanded = expanded.value
+                        )
+
+                        CustomDropdownMenu(
+                            expanded = expanded.value,
+                            onDismissRequest = { expanded.value = false },
+                            options = dataDateOption,
+                            onOptionSelected = { option ->
+                                selectedOptionDataDate.value = option
+                                expanded.value = false
+                                when (option) {
+                                    "Année" -> {
+                                        sortedDatas.value = trimData(data, currentDate.value, dataTypeOption[selectedIndexDataType], selectedOptionDataDate.value)
+                                        chart.value?.setChart(sortedDatas.value)
+
+                                        //sortedDatas = updateLegend(data, selectedOptionDataDate.value, dataTypeOption[selectedIndexDataType], currentDate.value)
+                                    }
+
+                                    "Mois" -> {
+                                        sortedDatas.value = trimData(data, currentDate.value, dataTypeOption[selectedIndexDataType], selectedOptionDataDate.value)
+                                        chart.value?.setChart(sortedDatas.value)
+                                        //sortedDatas = updateLegend(data, selectedOptionDataDate.value, dataTypeOption[selectedIndexDataType], currentDate.value)
+                                    }
+
+                                    "Jour" -> {
+                                        sortedDatas.value = trimData(data, currentDate.value, dataTypeOption[selectedIndexDataType], selectedOptionDataDate.value)
+                                        chart.value?.setChart(sortedDatas.value)
+                                        //sortedDatas = updateLegend(data, selectedOptionDataDate.value, dataTypeOption[selectedIndexDataType], currentDate.value)
+                                    }
+                                }
+                            },
+                        )
+                    }
+                }
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp)
+                ) {
+                    CustomGroupButton(
+                        items = listOf("Wifi", "Données mobile", "Total"),
+                        selectedIndex = selectedIndexDataType,
+                        onSelectedIndexChanged = { index ->
+                            selectedIndexDataType = index
+                            when (index) {
+                                0 -> {
+                                    sortedDatas.value = trimData(data, currentDate.value, dataTypeOption[selectedIndexDataType], selectedOptionDataDate.value)
+                                    chart.value?.setChart(sortedDatas.value)
+                                    //sortedDatas = updateLegend(data, selectedOptionDataDate.value, dataTypeOption[selectedIndexDataType], currentDate.value)
                                 }
 
-                                "Mois" -> {
-                                    chart.value?.setChart(
-                                        data,
-                                        currentDate.value,
-                                        dataTypeOption[selectedIndexDataType],
-                                        option
-                                    )
+                                1 -> {
+                                    sortedDatas.value = trimData(data, currentDate.value, dataTypeOption[selectedIndexDataType], selectedOptionDataDate.value)
+                                    chart.value?.setChart(sortedDatas.value)
+                                    //sortedDatas = updateLegend(data, selectedOptionDataDate.value, dataTypeOption[selectedIndexDataType], currentDate.value)
                                 }
 
-                                "Jour" -> {
-                                    chart.value?.setChart(
-                                        data,
-                                        currentDate.value,
-                                        dataTypeOption[selectedIndexDataType],
-                                        option
-                                    )
+                                2 -> {
+                                    sortedDatas.value = trimData(data, currentDate.value, dataTypeOption[selectedIndexDataType], selectedOptionDataDate.value)
+                                    chart.value?.setChart(sortedDatas.value)
+                                    //sortedDatas = updateLegend(data, selectedOptionDataDate.value, dataTypeOption[selectedIndexDataType], currentDate.value)
                                 }
+                            }
+                        }
+                    )
+                }
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                ) {
+                    AndroidView(
+                        factory = { context ->
+                            PieChart(context).apply {
+                                chart.value = this
+                                sortedDatas.value = trimData(data, currentDate.value, dataTypeOption[selectedIndexDataType], selectedOptionDataDate.value)
+                                chart.value?.setChart(sortedDatas.value)
+                                //sortedDatas = updateLegend(data, selectedOptionDataDate.value, dataTypeOption[selectedIndexDataType], currentDate.value)
+
                             }
                         },
+                        modifier = Modifier
+                            .fillMaxSize()
                     )
+
                 }
-            }
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp)
-            ) {
-                CustomGroupButton(
-                    items = listOf("Wifi", "Données mobile", "Total"),
-                    selectedIndex = selectedIndexDataType,
-                    onSelectedIndexChanged = { index ->
-                        selectedIndexDataType = index
-                        when (index) {
-                            0 -> {
-                                chart.value?.setChart(
-                                    data,
-                                    currentDate.value,
-                                    dataTypeOption[selectedIndexDataType],
-                                    selectedOptionDataDate.value
-                                )
-                            }
-
-                            1 -> {
-                                chart.value?.setChart(
-                                    data,
-                                    currentDate.value,
-                                    dataTypeOption[selectedIndexDataType],
-                                    selectedOptionDataDate.value,
-                                )
-                            }
-
-                            2 -> {
-                                chart.value?.setChart(
-                                    data,
-                                    currentDate.value,
-                                    dataTypeOption[selectedIndexDataType],
-                                    selectedOptionDataDate.value,
-                                )
-                            }
-                        }
-                    }
-                )
-            }
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-            ) {
-                AndroidView(
-                    factory = { context ->
-                        PieChart(context).apply {
-                            chart.value = this
-                            setChart(
-                                data,
-                                currentDate.value,
-                                dataTypeOption[selectedIndexDataType],
-                                selectedOptionDataDate.value
-                            )
-
-                        }
-                    },
+                Row(
                     modifier = Modifier
-                        .fillMaxSize()
-                )
-
-            }
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(30.dp)
-                    .padding(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(
-                    onClick = { goToPrevious() },
-                    modifier = Modifier.weight(0.2f)
+                        .fillMaxWidth()
+                        .height(30.dp)
+                        .padding(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(Icons.Default.ArrowBack, contentDescription = "Précédent")
-                }
-                Text(
-                    text = selectedDateText,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(horizontal = 16.dp)
-                )
-                IconButton(
-                    onClick = { goToNext() },
-                    modifier = Modifier.weight(0.2f)
-                ) {
-                    Icon(Icons.Default.ArrowForward, contentDescription = "Suivant")
+                    IconButton(
+                        onClick = { goToPrevious() },
+                        modifier = Modifier.weight(0.2f)
+                    ) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Précédent")
+                    }
+                    Text(
+                        text = selectedDateText,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    )
+                    IconButton(
+                        onClick = { goToNext() },
+                        modifier = Modifier.weight(0.2f)
+                    ) {
+                        Icon(Icons.Default.ArrowForward, contentDescription = "Suivant")
+                    }
                 }
             }
         }
-    }
 
-    Card(
-        colors = CardDefaults.cardColors(Color.White),
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp)
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
-            Text(
-                text = "Légende du Graphe",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-
-            // Ajoutez ici les éléments de votre légende
-            LegendItem("Application 1", Color.Red)
-            LegendItem("Application 2", Color.Green)
-            LegendItem("Application 3", Color.Blue)
-            // Ajoutez plus d'éléments si nécessaire
-        }
-    }
-}
-}
-@Composable
-fun LegendItem(label: String, color: Color) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.padding(bottom = 4.dp)
-    ) {
-        Box(
+        Card(
+            colors = CardDefaults.cardColors(Color.White),
             modifier = Modifier
-                .size(16.dp)
-                .background(color)
-        )
-        Spacer(modifier = Modifier.width(8.dp))
-        Text(text = label)
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp)
+            ) {
+                Text(
+                    text = "Légende du Graphe",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+
+
+                // Ajout de la légende pour chaque nom d'application dans le graphe
+                sortedDatas.value?.let { sortedData ->
+
+                    val total = sortedData.sumOf { it.value.toDouble() }.toFloat()
+                    sortedData.forEach { entry ->
+                        LegendItem(entry.label, entry.value, total, DataColors.getColor(sortedData.indexOf(entry)))
+                    }
+                }
+
+
+            }
+        }
     }
+
 }
 
 
