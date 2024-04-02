@@ -1,6 +1,8 @@
 package fr.umontpellier.carbonalyser.model
 
 import fr.umontpellier.carbonalyser.android.PackageNetworkStats
+import fr.umontpellier.carbonalyser.utils.Bytes
+import fr.umontpellier.carbonalyser.utils.CO2Emissions
 
 object OneByte : Model {
     private const val CO2_PER_KWH_IN_DC_GREY = 519
@@ -35,8 +37,12 @@ object OneByte : Model {
 
     override val id = "1byte"
     override fun estimate(connectipkgNetStats: PackageNetworkStats, options: ModelOptions): ModelResult {
-        val bytesReceivedCO2 = perByte(connectipkgNetStats.bytesReceived.toDouble(), options.green)
-        val bytesSentCO2 = perByte(connectipkgNetStats.bytesSent.toDouble(), options.green)
-        return ModelResult(bytesReceivedCO2, bytesSentCO2)
+        val bytesReceivedCO2 = perByte(connectipkgNetStats.bytesReceived.value.toDouble(), options.green)
+        val bytesSentCO2 = perByte(connectipkgNetStats.bytesSent.value.toDouble(), options.green)
+        return ModelResult(CO2Emissions( bytesReceivedCO2),CO2Emissions( bytesSentCO2))
+    }
+     override  fun convert(consumption: Bytes, option: Boolean): CO2Emissions {
+        val bytesInCO2 = perByte(consumption.value.toDouble(), option)
+        return CO2Emissions(bytesInCO2)
     }
 }

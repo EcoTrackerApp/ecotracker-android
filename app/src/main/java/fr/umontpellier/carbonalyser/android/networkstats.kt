@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.net.ConnectivityManager
+import fr.umontpellier.carbonalyser.utils.Bytes
 import java.time.Instant
 
 
@@ -40,14 +41,14 @@ class PackageNetworkStats(
     /**
      * Total number of bytes sent during the network statistics collection interval.
      */
-    val bytesSent: Long
-        get() = networkBucket.txBytes
+    val bytesSent: Bytes
+        get() = Bytes(networkBucket.txBytes)
 
     /**
      * Total number of bytes received during the network statistics collection interval.
      */
-    val bytesReceived: Long
-        get() = networkBucket.rxBytes
+    val bytesReceived: Bytes
+        get() = Bytes(networkBucket.rxBytes)
 
     /**
      * Total number of packets sent during the network statistics collection interval.
