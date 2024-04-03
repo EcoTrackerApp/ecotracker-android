@@ -2,11 +2,15 @@ package fr.umontpellier.carbonalyser.ui.components.tiles
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
@@ -15,6 +19,7 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import fr.umontpellier.carbonalyser.R
 import fr.umontpellier.carbonalyser.ui.theme.EcoTrackerTheme
 
@@ -25,7 +30,9 @@ fun DynamicTile(
     secondText: String,
     imageResId: Int,
     imageOffSetX: Int,
-    imageOffSetY: Int
+    imageOffSetY: Int,
+    showDialog: MutableState<Boolean>
+
 ) {
     Card(
         colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -33,6 +40,7 @@ fun DynamicTile(
         modifier = Modifier
             .padding(16.dp)
             .size(150.dp)
+            .clickable { showDialog.value = true }
     ) {
         Box(
             modifier = Modifier
@@ -85,6 +93,8 @@ fun DynamicTile(
 @Preview
 @Composable
 fun DynamicTilePreview() {
+    val showDialog = remember { mutableStateOf(false) }
+
     EcoTrackerTheme {
         DynamicTile(
             logoResId = R.drawable.clock_rotate_left_solid,
@@ -92,10 +102,11 @@ fun DynamicTilePreview() {
             secondText = "Durée enregistrement",
             imageResId = R.drawable.image_clock_tile,
             imageOffSetX = 100,
-            imageOffSetY = 90
+            imageOffSetY = 90,
+            showDialog = showDialog
         )
+
     }
 }
-
 
 

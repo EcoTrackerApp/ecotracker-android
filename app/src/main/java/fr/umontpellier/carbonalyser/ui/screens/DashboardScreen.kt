@@ -19,6 +19,8 @@ import fr.umontpellier.carbonalyser.android.packageNetworkStatsManager
 import fr.umontpellier.carbonalyser.model.ModelOptions
 import fr.umontpellier.carbonalyser.model.ModelService
 import fr.umontpellier.carbonalyser.ui.components.tiles.DynamicTile
+import fr.umontpellier.carbonalyser.ui.components.tiles.EnlargedDynamicTileDialog
+import fr.umontpellier.carbonalyser.ui.components.tiles.TileWithDialog
 import fr.umontpellier.carbonalyser.ui.components.tiles.ValueTile
 import fr.umontpellier.carbonalyser.ui.theme.EcoTrackerTheme
 import fr.umontpellier.carbonalyser.util.format
@@ -70,6 +72,7 @@ fun DashboardScreen(
     uploadedData: Double,
     carEquivalent: Double,
     numberOfCharges: Double
+
 ) {
     Box(
         modifier = Modifier
@@ -95,63 +98,63 @@ fun DashboardScreen(
 
                 ) {
                 item {
-                    DynamicTile(
+                    TileWithDialog(
                         logoResId = R.drawable.clock_rotate_left_solid,
                         firstText = "$recordingDuration jours",
                         secondText = "Durée enregistrement",
                         imageResId = R.drawable.image_clock_tile,
                         imageOffSetX = 180,
-                        imageOffSetY = 120
+                        imageOffSetY = 120,
                     )
                 }
                 item {
-                    DynamicTile(
+                    TileWithDialog(
                         logoResId = R.drawable.bolt_lightning_solid,
                         firstText = "$consumption kWh",
                         secondText = "Consommation",
                         imageResId = R.drawable.image_energy_tile,
                         imageOffSetX = 200,
-                        imageOffSetY = 120
+                        imageOffSetY = 120,
                     )
                 }
                 item {
-                    DynamicTile(
+                    TileWithDialog(
                         logoResId = R.drawable.download_solid,
                         firstText = "${downloadedData.format(2)} GB",
                         secondText = "Données téléchargées",
                         imageResId = R.drawable.image_download_tile,
                         imageOffSetX = 200,
-                        imageOffSetY = 170
+                        imageOffSetY = 170,
                     )
                 }
                 item {
-                    DynamicTile(
+                    TileWithDialog(
                         logoResId = R.drawable.upload_solid,
                         firstText = "${uploadedData.format(2)} GB",
                         secondText = "Données envoyées",
                         imageResId = R.drawable.image_upload_tile,
                         imageOffSetX = 210,
-                        imageOffSetY = 150
+                        imageOffSetY = 150,
                     )
                 }
                 item {
-                    DynamicTile(
+                    TileWithDialog(
                         logoResId = R.drawable.car_side_solid,
                         firstText = "$carEquivalent km",
                         secondText = "Équivalent kilométrique",
                         imageResId = R.drawable.image_car_tile,
                         imageOffSetX = 170,
-                        imageOffSetY = 140
+                        imageOffSetY = 140,
                     )
                 }
                 item {
-                    DynamicTile(
+                    TileWithDialog(
                         logoResId = R.drawable.logo_charger,
                         firstText = "$numberOfCharges",
                         secondText = "Équivalent recharge téléphone",
                         imageResId = R.drawable.image_phoneo_tile,
                         imageOffSetX = 200,
-                        imageOffSetY = 75
+                        imageOffSetY = 75,
                     )
                 }
             }
