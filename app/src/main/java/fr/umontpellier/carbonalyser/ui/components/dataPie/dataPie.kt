@@ -3,6 +3,8 @@ package fr.umontpellier.carbonalyser.ui.components.dataPie
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
@@ -43,15 +45,23 @@ fun LegendItem(label: String, value: Float, total: Float, color: Color) {
     ) {
         Box(
             modifier = Modifier
-                .size(16.dp)
+                .size(13.dp)
                 .background(color)
         )
         Spacer(modifier = Modifier.width(8.dp))
-        Text(text = "$label: $roundedValue Gb (${formattedPercentage}%)")
+        Text(
+            text = "$label: $roundedValue Gb (${formattedPercentage}%)",
+            fontSize = 14.sp
+        )
     }
 }
 
-fun trimData(data: List<DataPie>, currentDate: LocalDateTime, dataType: DataType, selectedOption: String): List<PieEntry> {
+fun trimData(
+    data: List<DataPie>,
+    currentDate: LocalDateTime,
+    dataType: DataType,
+    selectedOption: String
+): List<PieEntry> {
     val preSortedData = when (selectedOption) {
         "Année" -> sortDataByMonth(data, currentDate, dataType)
         "Mois" -> sortDataByDay(data, currentDate, dataType)
@@ -60,7 +70,6 @@ fun trimData(data: List<DataPie>, currentDate: LocalDateTime, dataType: DataType
     }
 
     //Tri par valeur d'applications pour chaque `dataName`
-
 
 
     // Tri et regroupement des données pré-triées par `dataName`, puis sommation des valeurs pour chaque `dataName`.
@@ -93,6 +102,7 @@ fun trimData(data: List<DataPie>, currentDate: LocalDateTime, dataType: DataType
 
     return sortedAndSummedData
 }
+
 fun PieChart.setChart(sortedAndSummedData: List<PieEntry>) {
 
 
@@ -204,7 +214,12 @@ fun CreatePieChart(data: List<DataPie>) {
             "Année" -> {
                 if (currentDate.value.year > 2022) {
                     currentDate.value = currentDate.value.minusYears(1)
-                    sortedDatas.value = trimData(data, currentDate.value, dataTypeOption[selectedIndexDataType], selectedOptionDataDate.value)
+                    sortedDatas.value = trimData(
+                        data,
+                        currentDate.value,
+                        dataTypeOption[selectedIndexDataType],
+                        selectedOptionDataDate.value
+                    )
                     chart.value?.setChart(sortedDatas.value)
                     //sortedDatas = updateLegend(data, selectedOptionDataDate.value, dataTypeOption[selectedIndexDataType], currentDate.value)
                 } else {
@@ -215,7 +230,12 @@ fun CreatePieChart(data: List<DataPie>) {
             "Mois" -> {
                 if (currentDate.value.year > 2022 || (currentDate.value.year == 2022 && currentDate.value.monthValue > 1)) {
                     currentDate.value = currentDate.value.minusMonths(1)
-                    sortedDatas.value = trimData(data, currentDate.value, dataTypeOption[selectedIndexDataType], selectedOptionDataDate.value)
+                    sortedDatas.value = trimData(
+                        data,
+                        currentDate.value,
+                        dataTypeOption[selectedIndexDataType],
+                        selectedOptionDataDate.value
+                    )
                     chart.value?.setChart(sortedDatas.value)
                     //sortedDatas = updateLegend(data, selectedOptionDataDate.value, dataTypeOption[selectedIndexDataType], currentDate.value)
                 } else {
@@ -226,7 +246,12 @@ fun CreatePieChart(data: List<DataPie>) {
             "Jour" -> {
                 if (currentDate.value.isAfter(LocalDateTime.of(2022, 1, 1, 0, 0))) {
                     currentDate.value = currentDate.value.minusDays(1)
-                    sortedDatas.value = trimData(data, currentDate.value, dataTypeOption[selectedIndexDataType], selectedOptionDataDate.value)
+                    sortedDatas.value = trimData(
+                        data,
+                        currentDate.value,
+                        dataTypeOption[selectedIndexDataType],
+                        selectedOptionDataDate.value
+                    )
                     chart.value?.setChart(sortedDatas.value)
                     //sortedDatas = updateLegend(data, selectedOptionDataDate.value, dataTypeOption[selectedIndexDataType], currentDate.value)
                 } else {
@@ -241,7 +266,12 @@ fun CreatePieChart(data: List<DataPie>) {
         when (selectedOptionDataDate.value) {
             "Année" -> {
                 currentDate.value = currentDate.value.plusYears(1)
-                sortedDatas.value = trimData(data, currentDate.value, dataTypeOption[selectedIndexDataType], selectedOptionDataDate.value)
+                sortedDatas.value = trimData(
+                    data,
+                    currentDate.value,
+                    dataTypeOption[selectedIndexDataType],
+                    selectedOptionDataDate.value
+                )
                 chart.value?.setChart(sortedDatas.value)
                 //sortedDatas = updateLegend(data, selectedOptionDataDate.value, dataTypeOption[selectedIndexDataType], currentDate.value)
 
@@ -249,14 +279,24 @@ fun CreatePieChart(data: List<DataPie>) {
 
             "Mois" -> {
                 currentDate.value = currentDate.value.plusMonths(1)
-                sortedDatas.value = trimData(data, currentDate.value, dataTypeOption[selectedIndexDataType], selectedOptionDataDate.value)
+                sortedDatas.value = trimData(
+                    data,
+                    currentDate.value,
+                    dataTypeOption[selectedIndexDataType],
+                    selectedOptionDataDate.value
+                )
                 chart.value?.setChart(sortedDatas.value)
                 //sortedDatas = updateLegend(data, selectedOptionDataDate.value, dataTypeOption[selectedIndexDataType], currentDate.value)
             }
 
             "Jour" -> {
                 currentDate.value = currentDate.value.plusDays(1)
-                sortedDatas.value = trimData(data, currentDate.value, dataTypeOption[selectedIndexDataType], selectedOptionDataDate.value)
+                sortedDatas.value = trimData(
+                    data,
+                    currentDate.value,
+                    dataTypeOption[selectedIndexDataType],
+                    selectedOptionDataDate.value
+                )
                 chart.value?.setChart(sortedDatas.value)
                 //sortedDatas = updateLegend(data, selectedOptionDataDate.value, dataTypeOption[selectedIndexDataType], currentDate.value)
             }
@@ -266,13 +306,20 @@ fun CreatePieChart(data: List<DataPie>) {
     }
 
 
-    Column {
+    Column(
+        modifier = Modifier.verticalScroll(rememberScrollState())
+    ) {
         Card(
             colors = CardDefaults.cardColors(Color.White),
             modifier = Modifier
                 .fillMaxWidth()
-                .aspectRatio(0.7f)
-                .padding(16.dp)
+                .aspectRatio(0.85f)
+                .padding(
+                    top = 3.dp,
+                    start = 16.dp,
+                    end = 16.dp,
+                    bottom = 16.dp
+                ) // Réduisez la valeur de padding en haut
         ) {
             Column(
                 modifier = Modifier
@@ -310,20 +357,35 @@ fun CreatePieChart(data: List<DataPie>) {
                                 expanded.value = false
                                 when (option) {
                                     "Année" -> {
-                                        sortedDatas.value = trimData(data, currentDate.value, dataTypeOption[selectedIndexDataType], selectedOptionDataDate.value)
+                                        sortedDatas.value = trimData(
+                                            data,
+                                            currentDate.value,
+                                            dataTypeOption[selectedIndexDataType],
+                                            selectedOptionDataDate.value
+                                        )
                                         chart.value?.setChart(sortedDatas.value)
 
                                         //sortedDatas = updateLegend(data, selectedOptionDataDate.value, dataTypeOption[selectedIndexDataType], currentDate.value)
                                     }
 
                                     "Mois" -> {
-                                        sortedDatas.value = trimData(data, currentDate.value, dataTypeOption[selectedIndexDataType], selectedOptionDataDate.value)
+                                        sortedDatas.value = trimData(
+                                            data,
+                                            currentDate.value,
+                                            dataTypeOption[selectedIndexDataType],
+                                            selectedOptionDataDate.value
+                                        )
                                         chart.value?.setChart(sortedDatas.value)
                                         //sortedDatas = updateLegend(data, selectedOptionDataDate.value, dataTypeOption[selectedIndexDataType], currentDate.value)
                                     }
 
                                     "Jour" -> {
-                                        sortedDatas.value = trimData(data, currentDate.value, dataTypeOption[selectedIndexDataType], selectedOptionDataDate.value)
+                                        sortedDatas.value = trimData(
+                                            data,
+                                            currentDate.value,
+                                            dataTypeOption[selectedIndexDataType],
+                                            selectedOptionDataDate.value
+                                        )
                                         chart.value?.setChart(sortedDatas.value)
                                         //sortedDatas = updateLegend(data, selectedOptionDataDate.value, dataTypeOption[selectedIndexDataType], currentDate.value)
                                     }
@@ -344,19 +406,34 @@ fun CreatePieChart(data: List<DataPie>) {
                             selectedIndexDataType = index
                             when (index) {
                                 0 -> {
-                                    sortedDatas.value = trimData(data, currentDate.value, dataTypeOption[selectedIndexDataType], selectedOptionDataDate.value)
+                                    sortedDatas.value = trimData(
+                                        data,
+                                        currentDate.value,
+                                        dataTypeOption[selectedIndexDataType],
+                                        selectedOptionDataDate.value
+                                    )
                                     chart.value?.setChart(sortedDatas.value)
                                     //sortedDatas = updateLegend(data, selectedOptionDataDate.value, dataTypeOption[selectedIndexDataType], currentDate.value)
                                 }
 
                                 1 -> {
-                                    sortedDatas.value = trimData(data, currentDate.value, dataTypeOption[selectedIndexDataType], selectedOptionDataDate.value)
+                                    sortedDatas.value = trimData(
+                                        data,
+                                        currentDate.value,
+                                        dataTypeOption[selectedIndexDataType],
+                                        selectedOptionDataDate.value
+                                    )
                                     chart.value?.setChart(sortedDatas.value)
                                     //sortedDatas = updateLegend(data, selectedOptionDataDate.value, dataTypeOption[selectedIndexDataType], currentDate.value)
                                 }
 
                                 2 -> {
-                                    sortedDatas.value = trimData(data, currentDate.value, dataTypeOption[selectedIndexDataType], selectedOptionDataDate.value)
+                                    sortedDatas.value = trimData(
+                                        data,
+                                        currentDate.value,
+                                        dataTypeOption[selectedIndexDataType],
+                                        selectedOptionDataDate.value
+                                    )
                                     chart.value?.setChart(sortedDatas.value)
                                     //sortedDatas = updateLegend(data, selectedOptionDataDate.value, dataTypeOption[selectedIndexDataType], currentDate.value)
                                 }
@@ -373,7 +450,12 @@ fun CreatePieChart(data: List<DataPie>) {
                         factory = { context ->
                             PieChart(context).apply {
                                 chart.value = this
-                                sortedDatas.value = trimData(data, currentDate.value, dataTypeOption[selectedIndexDataType], selectedOptionDataDate.value)
+                                sortedDatas.value = trimData(
+                                    data,
+                                    currentDate.value,
+                                    dataTypeOption[selectedIndexDataType],
+                                    selectedOptionDataDate.value
+                                )
                                 chart.value?.setChart(sortedDatas.value)
                                 //sortedDatas = updateLegend(data, selectedOptionDataDate.value, dataTypeOption[selectedIndexDataType], currentDate.value)
 
@@ -417,21 +499,27 @@ fun CreatePieChart(data: List<DataPie>) {
             colors = CardDefaults.cardColors(Color.White),
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
+                .padding(
+                    top = 3.dp,
+                    start = 16.dp,
+                    end = 16.dp,
+                    bottom = 16.dp
+                ) // Réduisez la valeur de padding en haut
         ) {
             Column(
                 modifier = Modifier.padding(16.dp)
+                    .fillMaxWidth()
             ) {
                 Text(
-                    text = "Légende du Graphe",
-                    fontSize = 18.sp,
+                    text = "Légende",
+                    fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(bottom = 8.dp)
+                    modifier = Modifier.padding(bottom = 5.dp)
                 )
 
 
                 // Ajout de la légende pour chaque nom d'application dans le graphe
-                sortedDatas.value?.let { sortedData ->
+                sortedDatas.value.let { sortedData ->
 
                     val total = sortedData.sumOf { it.value.toDouble() }.toFloat()
                     sortedData.forEach { entry ->
@@ -447,22 +535,10 @@ fun CreatePieChart(data: List<DataPie>) {
 }
 
 
-
 @Preview(showBackground = false)
 @Composable
 fun PreviewPieChart() {
     EcoTrackerTheme {
-//        val dataEntries = listOf(
-//            PieEntry(18.5f, "Twitch"),
-//            PieEntry(26.7f, "YouTube"),
-//            PieEntry(24.0f, "TikTok"),
-//            PieEntry(30.8f, "Chrome"),
-//            PieEntry(15.6f, "Snapchat"),
-//            PieEntry(10.2f, "WhatsApp"),
-//            PieEntry(20.9f, "Instagram"),
-//            PieEntry(22.1f, "Gmail")
-//        )
-
         val randomData = GenerateRandomDataPie.generateRandomDataForYears()
         CreatePieChart(randomData)
 

@@ -11,6 +11,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import fr.umontpellier.carbonalyser.ui.components.header.Header
+import fr.umontpellier.carbonalyser.ui.screens.ApplicationScreen
 import fr.umontpellier.carbonalyser.ui.screens.DashboardScreen
 import fr.umontpellier.carbonalyser.ui.screens.GraphScreen
 import fr.umontpellier.carbonalyser.ui.theme.EcoTrackerTheme
@@ -49,7 +50,7 @@ class MainActivity : ComponentActivity() {
                             GraphScreen()
                         }
                         composable("applicationScreen") {
-                            //ApplicationScreen()
+                            ApplicationScreen()
                         }
                     }
                 }
