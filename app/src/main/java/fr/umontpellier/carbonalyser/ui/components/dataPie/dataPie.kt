@@ -35,6 +35,8 @@ import kotlin.math.roundToInt
 @Composable
 fun LegendItem(label: String, value: Float, total: Float, color: Color) {
     val percentage = (value / total) * 100
+    val roundedValue = "%.1f".format(value)
+    val formattedPercentage = "%.1f".format(percentage)
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.padding(bottom = 4.dp)
@@ -45,7 +47,7 @@ fun LegendItem(label: String, value: Float, total: Float, color: Color) {
                 .background(color)
         )
         Spacer(modifier = Modifier.width(8.dp))
-        Text(text = "$label: $value (${percentage.roundToInt()}%)")
+        Text(text = "$label: $roundedValue Gb (${formattedPercentage}%)")
     }
 }
 
@@ -130,7 +132,7 @@ fun PieChart.setChart(sortedAndSummedData: List<PieEntry>) {
     isDrawHoleEnabled = true
     holeRadius = 40f
     transparentCircleRadius = 10f
-    legend.isEnabled = true
+    legend.isEnabled = false
     description.isEnabled = false
 
 
