@@ -221,7 +221,6 @@ fun CreatePieChart(data: List<DataPie>) {
                         selectedOptionDataDate.value
                     )
                     chart.value?.setChart(sortedDatas.value)
-                    //sortedDatas = updateLegend(data, selectedOptionDataDate.value, dataTypeOption[selectedIndexDataType], currentDate.value)
                 } else {
                     println("Date limite atteinte")
                 }
@@ -237,7 +236,6 @@ fun CreatePieChart(data: List<DataPie>) {
                         selectedOptionDataDate.value
                     )
                     chart.value?.setChart(sortedDatas.value)
-                    //sortedDatas = updateLegend(data, selectedOptionDataDate.value, dataTypeOption[selectedIndexDataType], currentDate.value)
                 } else {
                     println("Date limite atteinte")
                 }
@@ -253,7 +251,6 @@ fun CreatePieChart(data: List<DataPie>) {
                         selectedOptionDataDate.value
                     )
                     chart.value?.setChart(sortedDatas.value)
-                    //sortedDatas = updateLegend(data, selectedOptionDataDate.value, dataTypeOption[selectedIndexDataType], currentDate.value)
                 } else {
                     println("Date limite atteinte")
                 }
@@ -273,7 +270,6 @@ fun CreatePieChart(data: List<DataPie>) {
                     selectedOptionDataDate.value
                 )
                 chart.value?.setChart(sortedDatas.value)
-                //sortedDatas = updateLegend(data, selectedOptionDataDate.value, dataTypeOption[selectedIndexDataType], currentDate.value)
 
             }
 
@@ -286,7 +282,6 @@ fun CreatePieChart(data: List<DataPie>) {
                     selectedOptionDataDate.value
                 )
                 chart.value?.setChart(sortedDatas.value)
-                //sortedDatas = updateLegend(data, selectedOptionDataDate.value, dataTypeOption[selectedIndexDataType], currentDate.value)
             }
 
             "Jour" -> {
@@ -298,7 +293,6 @@ fun CreatePieChart(data: List<DataPie>) {
                     selectedOptionDataDate.value
                 )
                 chart.value?.setChart(sortedDatas.value)
-                //sortedDatas = updateLegend(data, selectedOptionDataDate.value, dataTypeOption[selectedIndexDataType], currentDate.value)
             }
 
             else -> {}
@@ -365,7 +359,6 @@ fun CreatePieChart(data: List<DataPie>) {
                                         )
                                         chart.value?.setChart(sortedDatas.value)
 
-                                        //sortedDatas = updateLegend(data, selectedOptionDataDate.value, dataTypeOption[selectedIndexDataType], currentDate.value)
                                     }
 
                                     "Mois" -> {
@@ -376,7 +369,6 @@ fun CreatePieChart(data: List<DataPie>) {
                                             selectedOptionDataDate.value
                                         )
                                         chart.value?.setChart(sortedDatas.value)
-                                        //sortedDatas = updateLegend(data, selectedOptionDataDate.value, dataTypeOption[selectedIndexDataType], currentDate.value)
                                     }
 
                                     "Jour" -> {
@@ -387,7 +379,6 @@ fun CreatePieChart(data: List<DataPie>) {
                                             selectedOptionDataDate.value
                                         )
                                         chart.value?.setChart(sortedDatas.value)
-                                        //sortedDatas = updateLegend(data, selectedOptionDataDate.value, dataTypeOption[selectedIndexDataType], currentDate.value)
                                     }
                                 }
                             },
@@ -413,7 +404,6 @@ fun CreatePieChart(data: List<DataPie>) {
                                         selectedOptionDataDate.value
                                     )
                                     chart.value?.setChart(sortedDatas.value)
-                                    //sortedDatas = updateLegend(data, selectedOptionDataDate.value, dataTypeOption[selectedIndexDataType], currentDate.value)
                                 }
 
                                 1 -> {
@@ -424,7 +414,6 @@ fun CreatePieChart(data: List<DataPie>) {
                                         selectedOptionDataDate.value
                                     )
                                     chart.value?.setChart(sortedDatas.value)
-                                    //sortedDatas = updateLegend(data, selectedOptionDataDate.value, dataTypeOption[selectedIndexDataType], currentDate.value)
                                 }
 
                                 2 -> {
@@ -435,7 +424,6 @@ fun CreatePieChart(data: List<DataPie>) {
                                         selectedOptionDataDate.value
                                     )
                                     chart.value?.setChart(sortedDatas.value)
-                                    //sortedDatas = updateLegend(data, selectedOptionDataDate.value, dataTypeOption[selectedIndexDataType], currentDate.value)
                                 }
                             }
                         }
@@ -457,8 +445,6 @@ fun CreatePieChart(data: List<DataPie>) {
                                     selectedOptionDataDate.value
                                 )
                                 chart.value?.setChart(sortedDatas.value)
-                                //sortedDatas = updateLegend(data, selectedOptionDataDate.value, dataTypeOption[selectedIndexDataType], currentDate.value)
-
                             }
                         },
                         modifier = Modifier
@@ -504,7 +490,7 @@ fun CreatePieChart(data: List<DataPie>) {
                     start = 16.dp,
                     end = 16.dp,
                     bottom = 16.dp
-                ) // Réduisez la valeur de padding en haut
+                )
         ) {
             Column(
                 modifier = Modifier.padding(16.dp)
