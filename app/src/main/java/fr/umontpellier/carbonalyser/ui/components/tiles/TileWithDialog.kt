@@ -1,5 +1,7 @@
 package fr.umontpellier.carbonalyser.ui.components.tiles
 
+import androidx.compose.material3.Button
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -27,6 +29,7 @@ fun TileWithDialog(
         imageOffSetY = imageOffSetY,
         showDialog = showDialog
     )
+
     EnlargedDynamicTileDialog(
         showDialog = showDialog,
         logoResId = logoResId,
