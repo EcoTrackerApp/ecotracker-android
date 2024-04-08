@@ -1,8 +1,6 @@
 package fr.umontpellier.carbonalyser.ui.screens
 
 import android.content.Context
-import android.content.Context.CONTEXT_RESTRICTED
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,7 +18,9 @@ import fr.umontpellier.carbonalyser.android.PackageNetworkStats
 import fr.umontpellier.carbonalyser.android.packageNetworkStatsManager
 import fr.umontpellier.carbonalyser.model.ModelOptions
 import fr.umontpellier.carbonalyser.model.ModelService
-import fr.umontpellier.carbonalyser.ui.components.tiles.*
+import fr.umontpellier.carbonalyser.ui.components.tiles.DurationScreenTile
+import fr.umontpellier.carbonalyser.ui.components.tiles.TileWithDialog
+import fr.umontpellier.carbonalyser.ui.components.tiles.ValueTile
 import fr.umontpellier.carbonalyser.ui.theme.EcoTrackerTheme
 import fr.umontpellier.carbonalyser.util.format
 import java.time.Duration
@@ -54,12 +54,12 @@ fun DashboardWeek(context: Context) {
     } else {
         DashboardScreen(
             globalEmission = dataCollection.map { pkg -> ModelService["1byte"]!!.estimate(pkg, ModelOptions()) }
-                .sumOf { it.bytesSentCO2 + it.bytesReceivedCO2 } / 1e3,
+                .sumOf { it.bytesSentCO2.amount + it.bytesReceivedCO2.amount } / 1e3,
             lastVisitIncrease = 0.0,
             recordingDuration = recordingDurationInDays.toDouble(),
             consumption = 0.0,
-            downloadedData = dataCollection.sumOf { it.bytesReceived } / 1e9,
-            uploadedData = dataCollection.sumOf { it.bytesSent } / 1e9,
+            downloadedData = dataCollection.sumOf { it.bytesReceived.value } / 1e9,
+            uploadedData = dataCollection.sumOf { it.bytesSent.value } / 1e9,
             carEquivalent = 0.0,
             numberOfCharges = 0.0,
             onDateSelected = { dateTime ->
