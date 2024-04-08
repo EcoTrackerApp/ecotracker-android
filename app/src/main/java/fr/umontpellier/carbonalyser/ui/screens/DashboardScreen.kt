@@ -48,12 +48,12 @@ fun DashboardWeek(context: Context) {
     } else {
         DashboardScreen(
             dataCollection.map { ModelService["1byte"]!!.estimate(it, ModelOptions()) }
-                .sumOf { it.bytesSentCO2 + it.bytesReceivedCO2 } / 1e3,
+                .sumOf { it.bytesSentCO2.amount + it.bytesReceivedCO2.amount } / 1e3,
             0.0,
             7.0,
             0.0,
-            dataCollection.sumOf { it.bytesReceived } / 1e9,
-            dataCollection.sumOf { it.bytesSent } / 1e9,
+            dataCollection.sumOf { it.bytesReceived.value } / 1e9,
+            dataCollection.sumOf { it.bytesSent.value } / 1e9,
             0.0,
             0.0
         )
