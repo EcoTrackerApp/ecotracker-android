@@ -18,22 +18,28 @@ import fr.umontpellier.carbonalyser.android.PackageNetworkStats
 import fr.umontpellier.carbonalyser.android.packageNetworkStatsManager
 import fr.umontpellier.carbonalyser.model.ModelOptions
 import fr.umontpellier.carbonalyser.model.ModelService
-import fr.umontpellier.carbonalyser.ui.components.tiles.DynamicTile
+import fr.umontpellier.carbonalyser.ui.components.tiles.DurationScreenTile
+import fr.umontpellier.carbonalyser.ui.components.tiles.TileWithDialog
 import fr.umontpellier.carbonalyser.ui.components.tiles.ValueTile
 import fr.umontpellier.carbonalyser.ui.theme.EcoTrackerTheme
 import fr.umontpellier.carbonalyser.util.format
+import java.time.Duration
 import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
 import java.time.temporal.ChronoUnit
 
 @Composable
 fun DashboardWeek(context: Context) {
     val end = Instant.now()
-    val start = end.minus(7, ChronoUnit.DAYS)
-
+    var start by remember { mutableStateOf(end.minus(7, ChronoUnit.DAYS)) }
     var isLoading by remember { mutableStateOf(false) }
     var dataCollection by remember { mutableStateOf(emptyList<PackageNetworkStats>()) }
 
-    LaunchedEffect(null) {
+    // Calculez la durée d'enregistrement en jours
+    val recordingDurationInDays = Duration.between(start, end).toDays()
+
+    LaunchedEffect(start) {
         isLoading = true
         dataCollection = context.packageNetworkStatsManager.collect(
             start,
@@ -47,15 +53,19 @@ fun DashboardWeek(context: Context) {
         CircularProgressIndicator()
     } else {
         DashboardScreen(
-            dataCollection.map { ModelService["1byte"]!!.estimate(it, ModelOptions()) }
+            globalEmission = dataCollection.map { pkg -> ModelService["1byte"]!!.estimate(pkg, ModelOptions()) }
                 .sumOf { it.bytesSentCO2.amount + it.bytesReceivedCO2.amount } / 1e3,
-            0.0,
-            7.0,
-            0.0,
-            dataCollection.sumOf { it.bytesReceived.value } / 1e9,
-            dataCollection.sumOf { it.bytesSent.value } / 1e9,
-            0.0,
-            0.0
+            lastVisitIncrease = 0.0,
+            recordingDuration = recordingDurationInDays.toDouble(),
+            consumption = 0.0,
+            downloadedData = dataCollection.sumOf { it.bytesReceived.value } / 1e9,
+            uploadedData = dataCollection.sumOf { it.bytesSent.value } / 1e9,
+            carEquivalent = 0.0,
+            numberOfCharges = 0.0,
+            onDateSelected = { dateTime ->
+                val newStart = dateTime.atZone(ZoneId.systemDefault()).toInstant()
+                start = newStart
+            }
         )
     }
 }
@@ -69,8 +79,10 @@ fun DashboardScreen(
     downloadedData: Double,
     uploadedData: Double,
     carEquivalent: Double,
-    numberOfCharges: Double
-) {
+    numberOfCharges: Double,
+    onDateSelected: (LocalDateTime) -> Unit,
+
+    ) {
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -95,63 +107,66 @@ fun DashboardScreen(
 
                 ) {
                 item {
-                    DynamicTile(
+
+                    DurationScreenTile(
                         logoResId = R.drawable.clock_rotate_left_solid,
                         firstText = "$recordingDuration jours",
                         secondText = "Durée enregistrement",
                         imageResId = R.drawable.image_clock_tile,
                         imageOffSetX = 180,
-                        imageOffSetY = 120
+                        imageOffSetY = 120,
+                        recordingDuration = recordingDuration,
+                        onDateSelected = onDateSelected
                     )
                 }
                 item {
-                    DynamicTile(
+                    TileWithDialog(
                         logoResId = R.drawable.bolt_lightning_solid,
-                        firstText = "$consumption kWh",
+                        firstText = "$consumption kW",
                         secondText = "Consommation",
                         imageResId = R.drawable.image_energy_tile,
                         imageOffSetX = 200,
-                        imageOffSetY = 120
+                        imageOffSetY = 120,
                     )
                 }
                 item {
-                    DynamicTile(
+                    TileWithDialog(
                         logoResId = R.drawable.download_solid,
                         firstText = "${downloadedData.format(2)} GB",
                         secondText = "Données téléchargées",
                         imageResId = R.drawable.image_download_tile,
                         imageOffSetX = 200,
-                        imageOffSetY = 170
+                        imageOffSetY = 170,
                     )
                 }
                 item {
-                    DynamicTile(
+                    TileWithDialog(
                         logoResId = R.drawable.upload_solid,
                         firstText = "${uploadedData.format(2)} GB",
                         secondText = "Données envoyées",
                         imageResId = R.drawable.image_upload_tile,
                         imageOffSetX = 210,
-                        imageOffSetY = 150
+                        imageOffSetY = 150,
                     )
                 }
                 item {
-                    DynamicTile(
+                    TileWithDialog(
                         logoResId = R.drawable.car_side_solid,
                         firstText = "$carEquivalent km",
                         secondText = "Équivalent kilométrique",
                         imageResId = R.drawable.image_car_tile,
                         imageOffSetX = 170,
-                        imageOffSetY = 140
+                        imageOffSetY = 140,
                     )
                 }
                 item {
-                    DynamicTile(
+                    TileWithDialog(
                         logoResId = R.drawable.logo_charger,
                         firstText = "$numberOfCharges",
                         secondText = "Équivalent recharge téléphone",
                         imageResId = R.drawable.image_phoneo_tile,
                         imageOffSetX = 200,
-                        imageOffSetY = 75
+                        imageOffSetY = 75,
                     )
                 }
             }
@@ -172,7 +187,10 @@ fun DashboardScreenPreview() {
             downloadedData = 12.6,
             uploadedData = 6.2,
             carEquivalent = 12.0,
-            numberOfCharges = 64.0
+            numberOfCharges = 64.0,
+            onDateSelected = { dateTime ->
+                println("clc les preview a un moment")
+            },
         )
     }
 }

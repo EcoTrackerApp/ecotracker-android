@@ -18,8 +18,6 @@ interface Model {
 
     fun convert(consumption: Bytes, option: Boolean): CO2Emissions
 
-    fun convert(consumption: Bytes, option: Boolean): CO2Emissions
-
 }
 
 data class ModelOptions(val green: Boolean = false)
