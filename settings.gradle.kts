@@ -15,5 +15,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "carbonalyser"
+rootProject.name = "ecotracker"
 include(":app")

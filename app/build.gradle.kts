@@ -1,15 +1,14 @@
-@Suppress("DSL_SCOPE_VIOLATION") // TODO: Remove once KTIJ-19369 is fixed
 plugins {
     alias(libs.plugins.com.android.application)
     alias(libs.plugins.org.jetbrains.kotlin.android)
 }
 
 android {
-    namespace = "fr.umontpellier.carbonalyser"
+    namespace = "fr.umontpellier.ecotracker"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "fr.umontpellier.carbonalyser"
+        applicationId = "fr.umontpellier.ecotracker"
         minSdk = 29
         targetSdk = 34
         versionCode = 1
@@ -27,6 +26,7 @@ android {
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
@@ -48,7 +48,7 @@ android {
 }
 
 dependencies {
-
+    // Kotlin dependencies
     implementation(libs.core.ktx)
     implementation(libs.lifecycle.runtime.ktx)
     implementation(libs.activity.compose)
@@ -60,12 +60,18 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.mpandroidchart)
     implementation(libs.androidx.navigation.compose)
-    testImplementation(libs.junit)
+
+
+    implementation(libs.koin.workmanager)
+    implementation(libs.koin.navigation.graph)
+    implementation(libs.koin.compose)
+
+    // Si un jour on fait des tests, lol.
+    /** testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.test.ext.junit)
     androidTestImplementation(libs.espresso.core)
     androidTestImplementation(platform(libs.compose.bom))
     androidTestImplementation(libs.ui.test.junit4)
     debugImplementation(libs.ui.tooling)
-    debugImplementation(libs.ui.test.manifest)
-
+    debugImplementation(libs.ui.test.manifest) **/
 }
