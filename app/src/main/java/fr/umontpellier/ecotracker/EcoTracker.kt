@@ -8,6 +8,7 @@ import androidx.activity.compose.setContent
 import fr.umontpellier.ecotracker.service.EcoTrackerConfig
 import fr.umontpellier.ecotracker.service.netstat.PkgNetStatService
 import fr.umontpellier.ecotracker.ui.EcoTrackerLayout
+import fr.umontpellier.ecotracker.ui.EcoTrackerTheme
 import fr.umontpellier.ecotracker.ui.screen.Apps
 import fr.umontpellier.ecotracker.ui.screen.Dashboard
 import fr.umontpellier.ecotracker.ui.screen.Detail
@@ -51,12 +52,14 @@ class EcoTrackerActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-            // Dessine la barre en bas
-            EcoTrackerLayout {
-                when (it) {
-                    0 -> Dashboard()
-                    1 -> Detail()
-                    2 -> Apps()
+            EcoTrackerTheme {
+                // Dessine la barre en bas
+                EcoTrackerLayout {
+                    when (it) {
+                        0 -> Dashboard()
+                        1 -> Detail()
+                        2 -> Apps()
+                    }
                 }
             }
         }

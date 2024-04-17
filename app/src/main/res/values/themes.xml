@@ -2,7 +2,7 @@
 <resources>
     <style name="Theme.EcoTracker" parent="android:Theme.Material.Light.NoActionBar">
 
-        <item name="android:fontFamily">@font/aleo</item>
+        <item name="android:fontFamily">@font/inter_medium</item>
     </style>
 
 </resources>

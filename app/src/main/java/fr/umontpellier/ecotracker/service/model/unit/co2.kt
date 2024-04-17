@@ -9,7 +9,7 @@ value class CO2(val value: Double) {
 
     override fun toString(): String {
         val absBytes = abs(value)
-        val unit = "kgCO2"
+        val unit = "gCO2"
         if (absBytes < 1000) {
             return "$value $unit"
         }
