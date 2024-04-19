@@ -13,7 +13,7 @@ class ModelService(
     private val models = mutableMapOf<String, Model>(
         "1byte" to OneByte
     )
-    private val results: Map<Int, Model.AppEmission>
+    val results: LinkedHashMap<Int, Model.AppEmission>
         get() = pkgNetStatService.results
             .map { (uid, netStat) ->
                 uid to get(config.model)!!.estimate(
@@ -21,7 +21,8 @@ class ModelService(
                     config.apps[uid] ?: EcoTrackerConfig.AppConfig()
                 )
             }
-            .toMap()
+            .sortedByDescending { it.second.total.value }
+            .toMap(LinkedHashMap())
 
     val total: CO2
         get() = CO2(results.map { (_, emission) -> emission.total.value }.sum())

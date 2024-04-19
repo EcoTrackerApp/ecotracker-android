@@ -4,6 +4,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush.Companion.horizontalGradient
@@ -31,16 +32,12 @@ import java.time.Instant
 
 @Composable
 fun Dashboard(
-    config: EcoTrackerConfig = koinInject(),
+    config: MutableState<EcoTrackerConfig> = koinInject(),
     pkgNetStatService: PkgNetStatService = koinInject(),
     modelService: ModelService = koinInject(),
 ) {
-    if (!pkgNetStatService.job.isCompleted) {
-        return
-    }
-
     Column(verticalArrangement = Arrangement.spacedBy(24.dp), modifier = Modifier.padding(bottom = 32.dp)) {
-        Header(modelService.total, start = config.interval.first, end = config.interval.second)
+        Header(modelService.total, start = config.value.interval.first, end = config.value.interval.second)
         Column(
             modifier = Modifier
                 .padding(horizontal = 16.dp)

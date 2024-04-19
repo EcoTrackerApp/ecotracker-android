@@ -10,7 +10,7 @@ import kotlinx.coroutines.*
 
 class PkgNetStatService(private val context: Context, private val config: EcoTrackerConfig) {
 
-    val job = Job()
+    var job = Job()
     private val scope = CoroutineScope(Dispatchers.IO + job)
 
     var isNetStatReady = false
@@ -28,22 +28,26 @@ class PkgNetStatService(private val context: Context, private val config: EcoTra
     /**
      * Met à jour le [PkgNetStatService] pour la nouvelle configuration donnée.
      */
-    fun update() = scope.launch(job) {
-        results.clear()
-        isNetStatReady = false
+    fun update() {
+        job = Job()
+        scope.launch(job) {
+            results.clear()
+            isNetStatReady = false
 
-        val netStat = context.getSystemService(NetworkStatsManager::class.java)
-        if (netStat == null) {
-            job.cancel("NetworkStatsManager")
-            return@launch
+            val netStat = context.getSystemService(NetworkStatsManager::class.java)
+            if (netStat == null) {
+                Log.e("ecotracker", "Net stat")
+                job.cancel("NetworkStatsManager")
+                return@launch
+            }
+
+            Log.i("ecotracker", "Fetching WIFI data...")
+            fetchAndStore(netStat, ConnectionType.WIFI)
+            Log.i("ecotracker", "Fetching mobile data...")
+            fetchAndStore(netStat, ConnectionType.MOBILE)
+            Log.i("ecotracker", "Done!")
+            job.complete()
         }
-
-        Log.i("ecotracker", "Fetching WIFI data...")
-        fetchAndStore(netStat, ConnectionType.WIFI)
-        Log.i("ecotracker", "Fetching mobile data...")
-        fetchAndStore(netStat, ConnectionType.MOBILE)
-        Log.i("ecotracker", "Done!")
-        job.complete()
     }
 
     /**

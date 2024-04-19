@@ -5,6 +5,7 @@ import android.app.Application
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.runtime.mutableStateOf
 import fr.umontpellier.ecotracker.service.EcoTrackerConfig
 import fr.umontpellier.ecotracker.service.model.ModelService
 import fr.umontpellier.ecotracker.service.netstat.PkgNetStatService
@@ -23,7 +24,7 @@ import org.koin.dsl.module
 
 private val ecoTrackerModule = module {
     // Configuration par défaut
-    single { EcoTrackerConfig() }
+    single { mutableStateOf(EcoTrackerConfig()) }
 
     singleOf(::PkgNetStatService)
     singleOf(::ModelService)

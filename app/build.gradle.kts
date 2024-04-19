@@ -27,11 +27,11 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "11"
     }
     buildFeatures {
         compose = true
@@ -41,7 +41,29 @@ android {
     }
     packaging {
         resources {
-            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            pickFirsts += listOf(
+                "META-INF/AL2.0",
+                "META-INF/LGPL2.1",
+                "META-INF/ASL-2.0.txt",
+                "META-INF/LICENSE.md",
+                "META-INF/NOTICE.md",
+                "META-INF/LGPL-3.0.txt",
+            )
+            excludes += listOf(
+                "META-INF/kotlin-jupyter-libraries/libraries.json",
+                "META-INF/{INDEX.LIST,DEPENDENCIES}",
+                "{draftv3,draftv4}/schema",
+                "arrow-git.properties",
+                "license/*",
+                "/META-INF/{AL2.0,LGPL2.1}",
+                "META-INF/ASL-2.0.txt",
+                "META-INF/LICENSE.md",
+                "META-INF/NOTICE.md",
+                "META-INF/LGPL-3.0.txt",
+                "META-INF/LICENSE-EDL-1.0.txt",
+                "LICENSE-EDL-1.0.txt",
+                "*/LICENSE-EDL-1.0.txt"
+            )
         }
     }
 }
@@ -57,13 +79,15 @@ dependencies {
     implementation(libs.ui.tooling.preview)
     implementation(libs.material3)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
-    implementation(libs.mpandroidchart)
     implementation(libs.androidx.navigation.compose)
 
-
+    // dependency injection
     implementation(libs.koin.workmanager)
     implementation(libs.koin.navigation.graph)
     implementation(libs.koin.compose)
+
+    // graphs
+    implementation(libs.mpandroidchart)
 
     // Si un jour on fait des tests, lol.
     testImplementation(libs.junit)
