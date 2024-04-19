@@ -18,6 +18,10 @@ data class EcoTrackerConfig(
     var interval: Pair<Instant, Instant> =
         now().minus(7, ChronoUnit.DAYS) to now(),
     /**
+     * Le modèle utilisé dans l'application
+     */
+    var model: String = "1byte",
+    /**
      * Les configurations spécifiques aux applications.
      */
     val apps: Map<Int, AppConfig> = mapOf()

@@ -3,6 +3,7 @@ package fr.umontpellier.ecotracker.service.netstat
 import android.app.usage.NetworkStats
 import android.app.usage.NetworkStatsManager
 import android.content.Context
+import android.util.Log
 import fr.umontpellier.ecotracker.service.EcoTrackerConfig
 import fr.umontpellier.ecotracker.service.model.unit.Bytes
 import kotlinx.coroutines.*
@@ -10,15 +11,25 @@ import kotlinx.coroutines.*
 class PkgNetStatService(private val context: Context, private val config: EcoTrackerConfig) {
 
     val job = Job()
-    val scope = CoroutineScope(Dispatchers.IO + job)
+    private val scope = CoroutineScope(Dispatchers.IO + job)
 
     var isNetStatReady = false
     val results = mutableMapOf<Int, AppNetStat>()
+
+    val total: Bytes
+        get() = Bytes(results.map { (_, stat) -> stat.total.value }.sum())
+
+    val received: Bytes
+        get() = Bytes(results.map { (_, stat) -> stat.received.value }.sum())
+
+    val sent: Bytes
+        get() = Bytes(results.map { (_, stat) -> stat.sent.value }.sum())
 
     /**
      * Met à jour le [PkgNetStatService] pour la nouvelle configuration donnée.
      */
     fun update() = scope.launch(job) {
+        results.clear()
         isNetStatReady = false
 
         val netStat = context.getSystemService(NetworkStatsManager::class.java)
@@ -27,8 +38,11 @@ class PkgNetStatService(private val context: Context, private val config: EcoTra
             return@launch
         }
 
+        Log.i("ecotracker", "Fetching WIFI data...")
         fetchAndStore(netStat, ConnectionType.WIFI)
+        Log.i("ecotracker", "Fetching mobile data...")
         fetchAndStore(netStat, ConnectionType.MOBILE)
+        Log.i("ecotracker", "Done!")
         job.complete()
     }
 
@@ -58,6 +72,9 @@ class PkgNetStatService(private val context: Context, private val config: EcoTra
         }
     }
 
-    data class AppNetStat(val type: ConnectionType, val received: Bytes, val sent: Bytes)
+    data class AppNetStat(val type: ConnectionType, val received: Bytes, val sent: Bytes) {
+        val total: Bytes
+            get() = Bytes(received.value + sent.value)
+    }
 
 }

@@ -6,12 +6,14 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import fr.umontpellier.ecotracker.service.EcoTrackerConfig
+import fr.umontpellier.ecotracker.service.model.ModelService
 import fr.umontpellier.ecotracker.service.netstat.PkgNetStatService
 import fr.umontpellier.ecotracker.ui.EcoTrackerLayout
-import fr.umontpellier.ecotracker.ui.EcoTrackerTheme
+import fr.umontpellier.ecotracker.ui.dialog.UsageAccessDialog
 import fr.umontpellier.ecotracker.ui.screen.Apps
 import fr.umontpellier.ecotracker.ui.screen.Dashboard
 import fr.umontpellier.ecotracker.ui.screen.Detail
+import org.koin.android.ext.android.inject
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 import org.koin.androidx.workmanager.koin.workManagerFactory
@@ -24,6 +26,7 @@ private val ecoTrackerModule = module {
     single { EcoTrackerConfig() }
 
     singleOf(::PkgNetStatService)
+    singleOf(::ModelService)
 }
 
 /**
@@ -51,10 +54,13 @@ class EcoTrackerActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        val pkgNetStatService by inject<PkgNetStatService>()
+        pkgNetStatService.update()
+
         setContent {
-            EcoTrackerTheme {
-                // Dessine la barre en bas
-                EcoTrackerLayout {
+            // Dessine la barre en bas
+            EcoTrackerLayout {
+                UsageAccessDialog {
                     when (it) {
                         0 -> Dashboard()
                         1 -> Detail()
