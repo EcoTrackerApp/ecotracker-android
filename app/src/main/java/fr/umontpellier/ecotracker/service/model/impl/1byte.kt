@@ -37,7 +37,7 @@ object OneByte : Model {
     }
 
     override fun estimate(
-        netStatResult: PkgNetStatService.AppNetStat,
+        netStatResult: PkgNetStatService.Result.App,
         config: EcoTrackerConfig.AppConfig
     ): Model.AppEmission {
         val bytesReceivedCO2 = perByte(netStatResult.received.value.toDouble(), config.isGreen)

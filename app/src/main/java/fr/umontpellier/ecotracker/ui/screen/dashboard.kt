@@ -4,7 +4,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush.Companion.horizontalGradient
@@ -19,25 +18,24 @@ import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import fr.umontpellier.ecotracker.R
+import fr.umontpellier.ecotracker.ecoTrackerPreviewModule
 import fr.umontpellier.ecotracker.service.EcoTrackerConfig
+import fr.umontpellier.ecotracker.service.model.Model
 import fr.umontpellier.ecotracker.service.model.ModelService
-import fr.umontpellier.ecotracker.service.model.unit.Bytes
-import fr.umontpellier.ecotracker.service.model.unit.CO2
-import fr.umontpellier.ecotracker.service.model.unit.Meter
 import fr.umontpellier.ecotracker.service.netstat.PkgNetStatService
 import fr.umontpellier.ecotracker.ui.component.Alert
 import fr.umontpellier.ecotracker.ui.util.dateFormatter
+import org.koin.compose.KoinApplication
 import org.koin.compose.koinInject
-import java.time.Instant
 
 @Composable
 fun Dashboard(
-    config: MutableState<EcoTrackerConfig> = koinInject(),
+    config: EcoTrackerConfig = koinInject(),
     pkgNetStatService: PkgNetStatService = koinInject(),
     modelService: ModelService = koinInject(),
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(24.dp), modifier = Modifier.padding(bottom = 32.dp)) {
-        Header(modelService.total, start = config.value.interval.first, end = config.value.interval.second)
+        Header()
         Column(
             modifier = Modifier
                 .padding(horizontal = 16.dp)
@@ -56,8 +54,8 @@ fun Dashboard(
                 modifier = Modifier.padding(horizontal = 8.dp),
                 letterSpacing = (-0.5).sp
             )
-            BytesReceived(pkgNetStatService.received, modelService.received)
-            BytesSent(pkgNetStatService.sent, modelService.sent)
+            BytesReceived()
+            BytesSent()
         }
         Column(
             verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -78,7 +76,10 @@ fun Dashboard(
 }
 
 @Composable
-fun Header(co2: CO2, start: Instant, end: Instant) {
+fun Header(
+    pkgNetStatService: PkgNetStatService = koinInject(),
+    modelService: ModelService = koinInject()
+) {
     Column(verticalArrangement = Arrangement.spacedBy((-60).dp)) {
         Image(
             painterResource(R.drawable.header),
@@ -100,7 +101,7 @@ fun Header(co2: CO2, start: Instant, end: Instant) {
                     fontSize = 24.sp
                 )
                 Text(
-                    text = co2.toString(),
+                    text = modelService.total.toString(),
                     color = Color.Green,
                     fontWeight = FontWeight.ExtraBold,
                     fontSize = 24.sp
@@ -108,7 +109,7 @@ fun Header(co2: CO2, start: Instant, end: Instant) {
             }
             Column {
                 Text(
-                    text = "du ${dateFormatter.format(start)}",
+                    text = "du ${dateFormatter.format(pkgNetStatService.cache.start)}",
                     color = Color.White,
                     fontWeight = FontWeight.ExtraBold,
                     textAlign = TextAlign.Right,
@@ -116,7 +117,7 @@ fun Header(co2: CO2, start: Instant, end: Instant) {
                     fontSize = 24.sp
                 )
                 Text(
-                    text = "au ${dateFormatter.format(end)}",
+                    text = "au ${dateFormatter.format(pkgNetStatService.cache.end)}",
                     color = Color.White,
                     fontWeight = FontWeight.ExtraBold,
                     textAlign = TextAlign.Right,
@@ -162,7 +163,10 @@ fun AverageAlert() {
 }
 
 @Composable
-fun BytesSent(bytes: Bytes, co2: CO2) {
+fun BytesSent(
+    pkgNetStatService: PkgNetStatService = koinInject(),
+    modelService: ModelService = koinInject()
+) {
     Alert(
         horizontalGradient(
             0F to Color(0xFFFF9877),
@@ -183,7 +187,7 @@ fun BytesSent(bytes: Bytes, co2: CO2) {
             letterSpacing = (-0.5F).sp
         )
         Text(
-            "$bytes ($co2)",
+            "${pkgNetStatService.sent} (${modelService.sent})",
             textAlign = TextAlign.Center,
             color = Color(0xBAFFFFFF),
             fontWeight = FontWeight.ExtraBold,
@@ -194,7 +198,10 @@ fun BytesSent(bytes: Bytes, co2: CO2) {
 }
 
 @Composable
-fun BytesReceived(bytes: Bytes, co2: CO2) {
+fun BytesReceived(
+    pkgNetStatService: PkgNetStatService = koinInject(),
+    modelService: ModelService = koinInject()
+) {
     Alert(
         horizontalGradient(
             0F to Color(0xFF2E6393),
@@ -215,7 +222,7 @@ fun BytesReceived(bytes: Bytes, co2: CO2) {
             letterSpacing = TextUnit(-0.5F, TextUnitType.Sp)
         )
         Text(
-            "$bytes ($co2)",
+            "${pkgNetStatService.received} (${modelService.received})",
             textAlign = TextAlign.Center,
             color = Color(0xBAFFFFFF),
             fontWeight = FontWeight.ExtraBold,
@@ -243,44 +250,7 @@ fun Equivalent(image: Int, text: String) {
 @Preview
 @Composable
 fun DashboardPreview() {
-    Column(verticalArrangement = Arrangement.spacedBy(48.dp), modifier = Modifier.padding(bottom = 32.dp)) {
-        Header(CO2(10000.0), start = Instant.now(), end = Instant.now())
-        Column(
-            modifier = Modifier
-                .padding(horizontal = 16.dp)
-        ) {
-            AverageAlert()
-        }
-        Column(
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier
-                .padding(horizontal = 16.dp)
-        ) {
-            Text(
-                text = "Dans le détail",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.ExtraBold,
-                modifier = Modifier.padding(horizontal = 8.dp),
-                letterSpacing = (-0.5).sp
-            )
-            BytesReceived(bytes = Bytes(2000), co2 = CO2(100.0))
-            BytesSent(bytes = Bytes(2000), co2 = CO2(100.0))
-        }
-        Column(
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(
-                text = "Concrètement, qu'est-ce que ça veut dire?",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.ExtraBold,
-                modifier = Modifier
-                    .padding(horizontal = 8.dp, vertical = 16.dp),
-                letterSpacing = (-0.5).sp,
-            )
-            Equivalent(image = R.drawable.car, text = "C'est ${Meter(100.0)} en voiture...")
-            Equivalent(image = R.drawable.train, text = "ou bien ${Meter(100.0)} en train")
-        }
+    KoinApplication(application = { modules(ecoTrackerPreviewModule) }) {
+        Dashboard()
     }
 }

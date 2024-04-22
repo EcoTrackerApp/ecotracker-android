@@ -5,9 +5,12 @@ import android.app.Application
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.runtime.mutableStateOf
 import fr.umontpellier.ecotracker.service.EcoTrackerConfig
+import fr.umontpellier.ecotracker.service.model.AndroidModelService
+import fr.umontpellier.ecotracker.service.model.DummyModelService
 import fr.umontpellier.ecotracker.service.model.ModelService
+import fr.umontpellier.ecotracker.service.netstat.AndroidNetStartService
+import fr.umontpellier.ecotracker.service.netstat.DummyPkgNetStatService
 import fr.umontpellier.ecotracker.service.netstat.PkgNetStatService
 import fr.umontpellier.ecotracker.ui.EcoTrackerLayout
 import fr.umontpellier.ecotracker.ui.dialog.UsageAccessDialog
@@ -19,15 +22,32 @@ import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 import org.koin.androidx.workmanager.koin.workManagerFactory
 import org.koin.core.context.startKoin
+import org.koin.core.module.dsl.bind
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 
 private val ecoTrackerModule = module {
     // Configuration par défaut
-    single { mutableStateOf(EcoTrackerConfig()) }
+    single { EcoTrackerConfig() }
 
-    singleOf(::PkgNetStatService)
-    singleOf(::ModelService)
+    singleOf(::AndroidNetStartService) {
+        bind<PkgNetStatService>()
+    }
+    singleOf(::AndroidModelService) {
+        bind<ModelService>()
+    }
+}
+
+val ecoTrackerPreviewModule = module {
+    // Configuration par défaut
+    single { EcoTrackerConfig() }
+
+    singleOf(::DummyPkgNetStatService) {
+        bind<PkgNetStatService>()
+    }
+    singleOf(::DummyModelService) {
+        bind<ModelService>()
+    }
 }
 
 /**
@@ -55,8 +75,8 @@ class EcoTrackerActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val pkgNetStatService by inject<PkgNetStatService>()
-        pkgNetStatService.update()
+        val androidNetStartService by inject<AndroidNetStartService>()
+        androidNetStartService.fetchAndCache()
 
         setContent {
             // Dessine la barre en bas

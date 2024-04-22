@@ -1,5 +1,6 @@
 package fr.umontpellier.ecotracker.service
 
+import java.time.Duration
 import java.time.Instant
 import java.time.Instant.now
 import java.time.temporal.ChronoUnit
@@ -15,8 +16,12 @@ data class EcoTrackerConfig(
     /**
      * L'intervalle sur laquelle les analyses de l'application sont faites.
      */
-    var interval: Pair<Instant, Instant> =
+    var dates: Pair<Instant, Instant> =
         now().minus(7, ChronoUnit.DAYS) to now(),
+    /**
+     * La précision sur laquelle on analyse
+     */
+    var precision: Duration = Duration.ofDays(1),
     /**
      * Le modèle utilisé dans l'application
      */
@@ -24,7 +29,7 @@ data class EcoTrackerConfig(
     /**
      * Les configurations spécifiques aux applications.
      */
-    val apps: Map<Int, AppConfig> = mapOf()
+    val apps: MutableMap<Int, AppConfig> = mutableMapOf()
 ) {
 
     /**
