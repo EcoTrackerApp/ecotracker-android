@@ -1,5 +1,6 @@
 package fr.umontpellier.ecotracker.ui.screen
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Text
@@ -19,8 +20,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import fr.umontpellier.ecotracker.R
 import fr.umontpellier.ecotracker.ecoTrackerPreviewModule
-import fr.umontpellier.ecotracker.service.EcoTrackerConfig
-import fr.umontpellier.ecotracker.service.model.Model
 import fr.umontpellier.ecotracker.service.model.ModelService
 import fr.umontpellier.ecotracker.service.netstat.PkgNetStatService
 import fr.umontpellier.ecotracker.ui.component.Alert
@@ -30,10 +29,10 @@ import org.koin.compose.koinInject
 
 @Composable
 fun Dashboard(
-    config: EcoTrackerConfig = koinInject(),
     pkgNetStatService: PkgNetStatService = koinInject(),
     modelService: ModelService = koinInject(),
 ) {
+    Log.i("ecotracker", pkgNetStatService.cache.toString())
     Column(verticalArrangement = Arrangement.spacedBy(24.dp), modifier = Modifier.padding(bottom = 32.dp)) {
         Header()
         Column(

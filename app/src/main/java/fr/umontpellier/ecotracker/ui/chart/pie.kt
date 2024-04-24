@@ -1,30 +1,27 @@
-import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.viewinterop.AndroidView
 import com.github.mikephil.charting.charts.PieChart
 import com.github.mikephil.charting.data.PieData
 import com.github.mikephil.charting.data.PieDataSet
 import com.github.mikephil.charting.data.PieEntry
 import com.github.mikephil.charting.utils.ColorTemplate
-import fr.umontpellier.ecotracker.service.model.Model
-import fr.umontpellier.ecotracker.ui.util.getPackageName
+import fr.umontpellier.ecotracker.ecoTrackerPreviewModule
+import fr.umontpellier.ecotracker.service.model.ModelService
+import fr.umontpellier.ecotracker.service.netstat.PkgNetStatService
+import org.koin.compose.KoinApplication
 import org.koin.compose.koinInject
 
 @Composable
 fun PieConsumptionChart(
-    context: Context = koinInject(),
-    entries: List<Map.Entry<Int, Model.AppEmission>>,
+    pkgNetStatService: PkgNetStatService = koinInject(),
+    modelService: ModelService = koinInject(),
     modifier: Modifier = Modifier
 ) {
-    val dataSet = PieDataSet(entries.map {
-        PieEntry(
-            it.value.total.value.toFloat(),
-            context.packageManager.getPackageName(it.key)
-        )
-    }, "")
+    val dataSet = PieDataSet(listOf(PieEntry(1F, "Prout")), "")
     dataSet.colors = ColorTemplate.PASTEL_COLORS.plus(ColorTemplate.JOYFUL_COLORS).toMutableList()
     dataSet.valueTextColor = Color.Black.toArgb()
     dataSet.valueTextSize = 24F
@@ -41,4 +38,12 @@ fun PieConsumptionChart(
         },
         modifier = Modifier.then(modifier)
     )
+}
+
+@Preview
+@Composable
+fun PieChartPreview() {
+    KoinApplication(application = { modules(ecoTrackerPreviewModule) }) {
+        PieConsumptionChart()
+    }
 }

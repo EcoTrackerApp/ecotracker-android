@@ -25,7 +25,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import fr.umontpellier.ecotracker.service.EcoTrackerConfig
-import fr.umontpellier.ecotracker.service.netstat.AndroidNetStartService
+import fr.umontpellier.ecotracker.service.netstat.PkgNetStatService
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
@@ -35,7 +35,7 @@ import org.koin.compose.koinInject
 @Composable
 fun EcoTrackerLayout(
     config: EcoTrackerConfig = koinInject(),
-    androidNetStartService: AndroidNetStartService = koinInject(),
+    pkgNetStartService: PkgNetStatService = koinInject(),
     content: @Composable (page: Int) -> Unit = {}
 ) {
     val pageState = rememberPagerState(pageCount = { 3 })
@@ -43,7 +43,7 @@ fun EcoTrackerLayout(
         config
     }
     LaunchedEffect(config) {
-        androidNetStartService.fetchAndCache()
+        pkgNetStartService.fetchAndCache()
     }
 
     Scaffold(bottomBar = {
@@ -60,9 +60,6 @@ fun EcoTrackerLayout(
         }, containerColor = Color.Transparent, modifier = Modifier.height(40.dp))
     }) {
         HorizontalPager(state = pageState, pageSize = PageSize.Fill) {
-            if (!androidNetStartService.cacheJob.isCompleted) {
-                return@HorizontalPager
-            }
             content(it)
         }
     }

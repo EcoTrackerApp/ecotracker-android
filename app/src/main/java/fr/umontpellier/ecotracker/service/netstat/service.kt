@@ -3,6 +3,7 @@ package fr.umontpellier.ecotracker.service.netstat
 import android.app.usage.NetworkStats
 import android.app.usage.NetworkStatsManager
 import android.content.Context
+import android.util.Log
 import fr.umontpellier.ecotracker.service.EcoTrackerConfig
 import fr.umontpellier.ecotracker.service.model.unit.Bytes
 import kotlinx.coroutines.CoroutineScope
@@ -21,7 +22,6 @@ import java.time.temporal.ChronoUnit
  */
 interface PkgNetStatService {
     val cacheJob: Job
-
     val cache: Result
 
     fun fetchAndCache()
@@ -158,6 +158,7 @@ class AndroidNetStartService(private val context: Context, private val config: E
         scope.launch(cacheJob) {
             try {
                 cache = fetch(config.dates.first, config.dates.second, config.precision, ConnectionType.values())
+                Log.i("ecotracker", "Fetching and caching completed")
                 cacheJob.complete()
             } catch (e: Exception) {
                 cacheJob.completeExceptionally(e)
@@ -173,24 +174,26 @@ class AndroidNetStartService(private val context: Context, private val config: E
         connections: Array<ConnectionType>
     ): PkgNetStatService.Result {
         val r: MutableMap<Instant, MutableMap<Int, PkgNetStatService.Result.App>> = mutableMapOf()
-        if (start.isBefore(end))
+        if (end.isBefore(start))
             throw IllegalArgumentException("Fetching data between an invalid interval $start - $end")
 
         val netStat = context.getSystemService(NetworkStatsManager::class.java)
             ?: throw IllegalStateException("NetworkStatsManager")
 
+        Log.i("ecotracker", "Looking between $start $end")
         for (connection in connections) {
             var s = start
             var e = start.plus(precision)
-            while (s.isBefore(end)) {
+            while (e.isBefore(end)) {
+                Log.i("ecotracker", "Fetching data for $connection between $s and $e")
                 val query = netStat.queryDetails(
                     connection.value,
                     null,
                     s.toEpochMilli(),
                     e.toEpochMilli()
                 )
+                val results = r.getOrDefault(s, mutableMapOf())
                 while (query.hasNextBucket()) {
-                    val results = r.getOrDefault(s, mutableMapOf())
                     val bucket = NetworkStats.Bucket()
                     query.getNextBucket(bucket)
 
@@ -202,6 +205,7 @@ class AndroidNetStartService(private val context: Context, private val config: E
                         Bytes(sent.value + bucket.txBytes)
                     )
                 }
+                r[s] = results
                 s = e
                 e = s.plus(precision)
             }

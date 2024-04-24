@@ -3,7 +3,8 @@ package fr.umontpellier.ecotracker.service.model
 import fr.umontpellier.ecotracker.service.EcoTrackerConfig
 import fr.umontpellier.ecotracker.service.model.impl.OneByte
 import fr.umontpellier.ecotracker.service.model.unit.CO2
-import fr.umontpellier.ecotracker.service.netstat.AndroidNetStartService
+import fr.umontpellier.ecotracker.service.netstat.PkgNetStatService
+import java.time.Instant
 
 interface ModelService {
     val total: CO2
@@ -19,7 +20,7 @@ class DummyModelService : ModelService {
 
 class AndroidModelService(
     private val config: EcoTrackerConfig,
-    private val androidNetStartService: AndroidNetStartService,
+    private val pkgNetStatService: PkgNetStatService,
 ) : ModelService {
 
     private val models = mutableMapOf<String, Model>(
@@ -29,18 +30,33 @@ class AndroidModelService(
     val model: Model
         get() = this[config.model]!!
 
-    val results: LinkedHashMap<Int, Model.AppEmission>
-        // TODO: Update this method
-        get() = LinkedHashMap()
+    val results: Map<Instant, LinkedHashMap<Int, Model.AppEmission>>
+        get() = pkgNetStatService.cache.appNetStats.map { (date, map) ->
+            date to map.map { (uid, arr) ->
+                uid to model.estimate(
+                    arr,
+                    config.apps[uid] ?: EcoTrackerConfig.AppConfig()
+                )
+            }.sortedByDescending { it.second.total.value }.toMap(LinkedHashMap())
+        }.toMap()
 
     override val total: CO2
-        get() = CO2(results.map { (_, emission) -> emission.total.value }.sum())
+        get() = CO2(results.map { (_, data) ->
+            data.map { (uid, app) -> app.total.value }
+                .sum()
+        }.sum())
 
     override val received: CO2
-        get() = CO2(results.map { (_, emission) -> emission.received.value }.sum())
+        get() = CO2(results.map { (_, data) ->
+            data.map { (uid, app) -> app.received.value }
+                .sum()
+        }.sum())
 
     override val sent: CO2
-        get() = CO2(results.map { (_, emission) -> emission.sent.value }.sum())
+        get() = CO2(results.map { (_, data) ->
+            data.map { (uid, app) -> app.sent.value }
+                .sum()
+        }.sum())
 
     /**
      * Retourne pour un nom de [model] une instance de [Model].
