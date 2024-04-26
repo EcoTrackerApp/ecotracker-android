@@ -10,23 +10,17 @@ import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.BottomAppBar
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import fr.umontpellier.ecotracker.service.EcoTrackerConfig
 import fr.umontpellier.ecotracker.service.netstat.PkgNetStatService
-import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
 @Preview
@@ -39,14 +33,22 @@ fun EcoTrackerLayout(
     content: @Composable (page: Int) -> Unit = {}
 ) {
     val pageState = rememberPagerState(pageCount = { 3 })
-    val config = remember {
-        config
-    }
-    LaunchedEffect(config) {
-        pkgNetStartService.fetchAndCache()
+    var isLoading by remember { mutableStateOf(pkgNetStartService.cacheJob.isActive) }
+
+    LaunchedEffect(pkgNetStartService.cacheJob) {
+        pkgNetStartService.cacheJob.invokeOnCompletion {
+            // Log the completion status
+            println("Job completed: ${pkgNetStartService.cacheJob.isCompleted}")
+            // Refresh UI when job completes
+            isLoading = false
+        }
     }
 
     Scaffold(bottomBar = {
+        if (isLoading) {
+            return@Scaffold
+        }
+
         BottomAppBar(content = {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterHorizontally),
@@ -59,25 +61,22 @@ fun EcoTrackerLayout(
             }
         }, containerColor = Color.Transparent, modifier = Modifier.height(40.dp))
     }) {
+        if (isLoading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
+
+            return@Scaffold
+        }
+
         HorizontalPager(state = pageState, pageSize = PageSize.Fill) {
             content(it)
         }
-    }
-}
-
-@Composable
-fun BottomBarIcon(icon: ImageVector, description: String, action: suspend () -> Unit) {
-    val coroutineScope = rememberCoroutineScope()
-
-    IconButton(onClick = {
-        coroutineScope.launch {
-            action()
-        }
-    }) {
-        Icon(
-            icon,
-            contentDescription = description,
-        )
     }
 }
 
