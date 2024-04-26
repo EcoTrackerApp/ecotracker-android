@@ -95,8 +95,16 @@ class DummyPkgNetStatService : PkgNetStatService {
 
     override val cache: PkgNetStatService.Result
         get() = PkgNetStatService.Result(
-            now().minus(7, ChronoUnit.DAYS), now(), Duration.ofDays(7), mapOf(
-                now() to mapOf(
+            now().minus(3, ChronoUnit.DAYS), now(), Duration.ofDays(1), mapOf(
+                now().minus(3, ChronoUnit.DAYS) to mapOf(
+                    1 to PkgNetStatService.Result.App(ConnectionType.MOBILE, Bytes(500), Bytes(500)),
+                    2 to PkgNetStatService.Result.App(ConnectionType.MOBILE, Bytes(500), Bytes(500))
+                ),
+                now().minus(2, ChronoUnit.DAYS) to mapOf(
+                    1 to PkgNetStatService.Result.App(ConnectionType.MOBILE, Bytes(500), Bytes(500)),
+                    2 to PkgNetStatService.Result.App(ConnectionType.MOBILE, Bytes(500), Bytes(500))
+                ),
+                now().minus(1, ChronoUnit.DAYS) to mapOf(
                     1 to PkgNetStatService.Result.App(ConnectionType.MOBILE, Bytes(500), Bytes(500)),
                     2 to PkgNetStatService.Result.App(ConnectionType.MOBILE, Bytes(500), Bytes(500))
                 )
