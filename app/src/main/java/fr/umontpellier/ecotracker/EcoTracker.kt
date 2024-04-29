@@ -86,7 +86,7 @@ class EcoTrackerActivity : ComponentActivity() {
                     when (it) {
                         0 -> Dashboard()
                         1 -> BarConsumptionChart()
-                        2 -> Apps()
+                        2 -> Apps(applicationContext)
                     }
                 }
             }
