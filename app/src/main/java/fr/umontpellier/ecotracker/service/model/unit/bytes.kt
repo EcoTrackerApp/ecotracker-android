@@ -6,6 +6,9 @@ import kotlin.math.pow
 
 @JvmInline
 value class Bytes(val value: Long) {
+    operator fun plus(other: Bytes): Bytes {
+        return Bytes(this.value + other.value)
+    }
 
     override fun toString(): String {
         val absBytes = abs(value.toDouble())
