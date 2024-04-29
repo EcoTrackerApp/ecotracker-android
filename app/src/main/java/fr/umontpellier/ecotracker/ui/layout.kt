@@ -23,6 +23,11 @@ import fr.umontpellier.ecotracker.service.EcoTrackerConfig
 import fr.umontpellier.ecotracker.service.netstat.PkgNetStatService
 import org.koin.compose.koinInject
 
+@OptIn(ExperimentalFoundationApi::class)
+val LocalPagerState = staticCompositionLocalOf<PagerState> {
+    error("No PagerState provided")
+}
+
 @Preview
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalFoundationApi::class)
@@ -75,7 +80,9 @@ fun EcoTrackerLayout(
         }
 
         HorizontalPager(state = pageState, pageSize = PageSize.Fill) {
-            content(it)
+            CompositionLocalProvider(LocalPagerState provides pageState) {
+                content(it)
+            }
         }
     }
 }
