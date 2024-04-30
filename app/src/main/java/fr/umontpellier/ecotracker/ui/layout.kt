@@ -1,6 +1,7 @@
 package fr.umontpellier.ecotracker.ui
 
 import android.annotation.SuppressLint
+import android.content.Context
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -25,7 +26,13 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import fr.umontpellier.ecotracker.service.EcoTrackerConfig
 import fr.umontpellier.ecotracker.service.netstat.PkgNetStatService
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import org.koin.compose.koinInject
+import java.io.File
+import java.io.FileInputStream
+import java.io.FileOutputStream
 
 @OptIn(ExperimentalFoundationApi::class)
 val LocalPagerState = staticCompositionLocalOf<PagerState> {
@@ -105,13 +112,30 @@ fun BottomBarIndicator(state: PagerState, id: Int) {
 
 @Composable
 fun EcoTrackerConfigSaver(
+    context: Context = koinInject(),
+    config: EcoTrackerConfig = koinInject(),
     lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current
 ) {
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
+            val path = context.getExternalFilesDir(null)
+            val file = File(path, "config.json")
+            if (event == Lifecycle.Event.ON_CREATE) {
+                val text = FileInputStream(file).reader().readText()
+                val fileConfig = Json.decodeFromString<EcoTrackerConfig>(text)
+                config.dates = fileConfig.dates
+                config.precision = fileConfig.precision
+                config.model = fileConfig.model
+                config.apps.putAll(fileConfig.apps)
+                return@LifecycleEventObserver
+            }
+
             if (event !in listOf(Lifecycle.Event.ON_PAUSE, Lifecycle.Event.ON_STOP))
                 return@LifecycleEventObserver
 
+            val json = Json.encodeToString(config)
+            FileOutputStream(file).writer()
+                .write(json)
         }
         lifecycleOwner.lifecycle.addObserver(observer)
         onDispose {
