@@ -90,6 +90,9 @@ dependencies {
     // graphs
     implementation(libs.mpandroidchart)
 
+    // serialization
+    implementation(libs.kotlinx.serialization.json)
+
     // Si un jour on fait des tests, lol.
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.test.ext.junit)

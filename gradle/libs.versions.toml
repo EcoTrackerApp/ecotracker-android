@@ -34,6 +34,7 @@ androidx-navigation-compose = { group = "androidx.navigation", name = "navigatio
 koin-workmanager = { group = "io.insert-koin", name = "koin-androidx-workmanager", version.ref = "koin" }
 koin-navigation-graph = { group = "io.insert-koin", name = "koin-androidx-navigation", version.ref = "koin" }
 koin-compose = { group = "io.insert-koin", name = "koin-androidx-compose", version.ref = "koin" }
+kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version = "1.6.3" }
 
 [plugins]
 com-android-application = { id = "com.android.application", version.ref = "agp" }
