@@ -3,7 +3,6 @@ package fr.umontpellier.ecotracker.ui.component
 import android.content.Context
 import android.view.ViewGroup
 import android.widget.ImageView
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
