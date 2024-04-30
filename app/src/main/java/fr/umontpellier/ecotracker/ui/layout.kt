@@ -17,8 +17,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.LifecycleOwner
 import fr.umontpellier.ecotracker.service.EcoTrackerConfig
 import fr.umontpellier.ecotracker.service.netstat.PkgNetStatService
 import org.koin.compose.koinInject
@@ -35,15 +39,13 @@ val LocalPagerState = staticCompositionLocalOf<PagerState> {
 fun EcoTrackerLayout(
     config: EcoTrackerConfig = koinInject(),
     pkgNetStartService: PkgNetStatService = koinInject(),
-    content: @Composable (page: Int) -> Unit = {}
+    content: @Composable (page: Int) -> Unit = {},
 ) {
     val pageState = rememberPagerState(pageCount = { 3 })
     var isLoading by remember { mutableStateOf(pkgNetStartService.cacheJob.isActive) }
 
     LaunchedEffect(pkgNetStartService.cacheJob) {
         pkgNetStartService.cacheJob.invokeOnCompletion {
-            // Log the completion status
-            println("Job completed: ${pkgNetStartService.cacheJob.isCompleted}")
             // Refresh UI when job completes
             isLoading = false
         }
@@ -99,4 +101,21 @@ fun BottomBarIndicator(state: PagerState, id: Int) {
             .height(10.dp)
             .background(Color.Black.copy(alpha = if (state.currentPage == id) 1F else 0.1F))
     )
+}
+
+@Composable
+fun EcoTrackerConfigSaver(
+    lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current
+) {
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event !in listOf(Lifecycle.Event.ON_PAUSE, Lifecycle.Event.ON_STOP))
+                return@LifecycleEventObserver
+
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
 }
