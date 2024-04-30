@@ -1,5 +1,6 @@
 package fr.umontpellier.ecotracker
 
+import PieConsumptionChart
 import android.annotation.SuppressLint
 import android.app.Application
 import android.os.Bundle
