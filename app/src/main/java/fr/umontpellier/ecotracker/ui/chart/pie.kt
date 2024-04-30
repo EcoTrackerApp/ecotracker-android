@@ -91,6 +91,19 @@ fun PieConsumptionChart(
                 },
                 modifier = Modifier.fillMaxSize().then(modifier)
             )
+            Row(
+                modifier = Modifier.padding(top = 16.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                pieEntries.forEachIndexed { index, pieEntry ->
+                    val color = Color(dataSet.colors[index % dataSet.colors.size])
+                    Box(
+                        modifier = Modifier
+                            .size(16.dp)
+                            .background(color)
+                    )
+                    Text(text = pieEntry.label)
+                }}
         }
     }
 }
