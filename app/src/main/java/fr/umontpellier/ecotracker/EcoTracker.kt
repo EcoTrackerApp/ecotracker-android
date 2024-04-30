@@ -17,7 +17,6 @@ import fr.umontpellier.ecotracker.service.netstat.AndroidNetStartService
 import fr.umontpellier.ecotracker.service.netstat.DummyPkgNetStatService
 import fr.umontpellier.ecotracker.service.netstat.PkgNetStatService
 import fr.umontpellier.ecotracker.ui.EcoTrackerLayout
-import fr.umontpellier.ecotracker.ui.chart.BarConsumptionChart
 import fr.umontpellier.ecotracker.ui.dialog.UsageAccessDialog
 import fr.umontpellier.ecotracker.ui.screen.Apps
 import fr.umontpellier.ecotracker.ui.screen.Dashboard
@@ -95,7 +94,7 @@ class EcoTrackerActivity : ComponentActivity() {
                     when (it) {
                         0 -> Dashboard()
                         1 -> Apps()
-                        2 -> BarConsumptionChart()
+                        2 -> PieConsumptionChart()
                     }
                 }
             }
