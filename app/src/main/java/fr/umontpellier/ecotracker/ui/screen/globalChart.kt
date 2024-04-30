@@ -1,6 +1,5 @@
 package fr.umontpellier.ecotracker.ui.screen
 
-import PieConsumptionChart
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -10,13 +9,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import fr.umontpellier.ecotracker.ecoTrackerPreviewModule
+import fr.umontpellier.ecotracker.ui.chart.BarConsumptionChart
 import fr.umontpellier.ecotracker.ui.component.AppColumn
+import org.koin.compose.KoinApplication
 
 @Composable
-fun Apps() {
+fun GlobalChart() {
     val lightBlue = Color(48, 114, 255)
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -28,7 +32,7 @@ fun Apps() {
                 .fillMaxWidth()
         ) {
             Text(
-                "Applications",
+                "Graphes",
                 fontSize = 25.sp,
                 fontWeight = FontWeight.ExtraBold,
                 letterSpacing = (-0.5).sp,
@@ -45,7 +49,7 @@ fun Apps() {
             shadowElevation = 4.dp,  // Utilisation de shadowElevation pour l'effet d'élévation
             color = Color.White
         ) {
-            PieConsumptionChart(applimit = 10)
+            BarConsumptionChart()
         }
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -56,7 +60,7 @@ fun Apps() {
                 .padding(horizontal = 16.dp),
         ) {
             Text(
-                "Details ",
+                "Classement ",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 letterSpacing = (-0.5).sp,
@@ -71,8 +75,15 @@ fun Apps() {
                 .fillMaxWidth()
                 .weight(1f)
         ) {
-            AppColumn(applimit = 10, buttonSize = 25, spaceBtwnItems = 1)
+            AppColumn(applimit = 3)
         }
     }
 }
 
+@Preview
+@Composable
+fun ChartApplist() {
+    KoinApplication(application = { modules(ecoTrackerPreviewModule) }) {
+        GlobalChart()
+    }
+}

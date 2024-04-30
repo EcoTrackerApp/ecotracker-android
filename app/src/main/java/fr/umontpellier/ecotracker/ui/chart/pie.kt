@@ -1,9 +1,6 @@
-import android.content.pm.PackageManager
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -26,8 +23,9 @@ import kotlin.math.roundToInt
 
 @Composable
 fun PieConsumptionChart(
+    modifier: Modifier = Modifier,
     pkgNetStatService: PkgNetStatService = koinInject(),
-    modifier: Modifier = Modifier
+    applimit: Int = 10
 ) {
 
 
@@ -54,12 +52,14 @@ fun PieConsumptionChart(
                     PieEntry(totalBytes.toFloat(), app)
                 }
                 .sortedByDescending { it.value }
-                .take(10)
+                .take(applimit)
                 .toList()
 
 // Créer un PieDataSet à partir de la liste de PieEntry
             val dataSet = PieDataSet(pieEntries, "Consommation par application")
-            dataSet.colors = ColorTemplate.PASTEL_COLORS.plus(ColorTemplate.JOYFUL_COLORS).plus(ColorTemplate.COLORFUL_COLORS).plus(ColorTemplate.LIBERTY_COLORS).toMutableList()
+            dataSet.colors =
+                ColorTemplate.PASTEL_COLORS.plus(ColorTemplate.JOYFUL_COLORS).plus(ColorTemplate.COLORFUL_COLORS)
+                    .plus(ColorTemplate.LIBERTY_COLORS).toMutableList()
             dataSet.valueTextColor = Color.Black.toArgb()
             dataSet.valueTextSize = 24F
             dataSet.sliceSpace = 2f

@@ -21,6 +21,7 @@ import fr.umontpellier.ecotracker.ui.EcoTrackerLayout
 import fr.umontpellier.ecotracker.ui.dialog.UsageAccessDialog
 import fr.umontpellier.ecotracker.ui.screen.Apps
 import fr.umontpellier.ecotracker.ui.screen.Dashboard
+import fr.umontpellier.ecotracker.ui.screen.GlobalChart
 import org.koin.android.ext.android.inject
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
@@ -95,8 +96,8 @@ class EcoTrackerActivity : ComponentActivity() {
                 UsageAccessDialog {
                     when (it) {
                         0 -> Dashboard()
-                        1 -> Apps()
-                        2 -> PieConsumptionChart()
+                        1 -> GlobalChart()
+                        2 -> Apps()
                     }
                 }
             }
