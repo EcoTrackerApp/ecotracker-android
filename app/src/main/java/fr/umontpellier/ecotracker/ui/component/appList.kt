@@ -2,14 +2,17 @@ package fr.umontpellier.ecotracker.ui.component
 
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.pager.PagerState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.Painter
@@ -20,10 +23,15 @@ import androidx.compose.ui.unit.sp
 import fr.umontpellier.ecotracker.R
 import fr.umontpellier.ecotracker.service.model.unit.Bytes
 import fr.umontpellier.ecotracker.service.netstat.PkgNetStatService
+import fr.umontpellier.ecotracker.ui.LocalPagerState
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun AppList(appList: Map<Int, Bytes>, pm: PackageManager, modifier: Modifier = Modifier) {
+fun AppList(appList: Map<Int, Bytes>, pm: PackageManager, modifier: Modifier = Modifier, pageState: PagerState) {
     LazyColumn(modifier = modifier) {
         items(appList.keys.toList()) { uid ->
             appList[uid]?.let { bytes ->
@@ -31,25 +39,28 @@ fun AppList(appList: Map<Int, Bytes>, pm: PackageManager, modifier: Modifier = M
                     uid = uid,
                     value = bytes,
                     pm = pm,
-                    onClick = {
-                        //changement de page
-                    }
+                    pageState = pageState
                 )
             }
         }
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun AppNameButton(uid: Int, value: Bytes, pm: PackageManager, onClick: () -> Unit) {
-
+fun AppNameButton(uid: Int, value: Bytes, pm: PackageManager, pageState: PagerState) {
+    val scope = rememberCoroutineScope()
     val appName = getAppLabel(uid, pm)
     val icon: Painter = painterResource(id = R.drawable.application_icon_default)
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
+            .clickable(onClick = {
+                scope.launch {
+                    pageState.animateScrollToPage(0) // Changer à la page souhaitée
+                }
+            })
             .padding(8.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
@@ -75,6 +86,7 @@ fun AppNameButton(uid: Int, value: Bytes, pm: PackageManager, onClick: () -> Uni
     }
 }
 
+
 fun aggregateTotalBytesByUid(result: PkgNetStatService.Result, n: Int): Map<Int, Bytes> {
     val aggregatedBytes = mutableMapOf<Int, Bytes>()
 
@@ -99,18 +111,10 @@ fun getAppLabel(uid: Int, pm: PackageManager): String {
 }
 
 
+@OptIn(ExperimentalFoundationApi::class)
 @Preview
 @Composable
-fun PreviexAppname() {
-    val systemUid = 1000;
-    val dummyPackageManager = PreviewPackageManager();
-    AppNameButtonForPreview(systemUid, Bytes(15000), dummyPackageManager, { dummyFun() })
-}
-
-
-@Preview
-@Composable
-fun PreviewAppList() {
+fun PreviewAppList(modifier: Modifier = Modifier) {
     val dummyPackageManager = PreviewPackageManager();
 
     val dummyMap = mapOf(
@@ -121,7 +125,8 @@ fun PreviewAppList() {
     AppListForPreview(
         appList = dummyMap,
         pm = dummyPackageManager,  // Passer le PackageManager de prévisualisation
-        modifier = Modifier.fillMaxWidth()
+        modifier = modifier
+
     )
 
 }
@@ -131,18 +136,21 @@ fun dummyFun() {
 }
 
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun AppNameButtonForPreview(uid: Int, value: Bytes, pm: PreviewPackageManager, onClick: () -> Unit) {
-    val packageName = pm.getPackagesForUid(uid)?.firstOrNull()
-    val appInfo = packageName?.let { pm.getApplicationInfo(it, 0) }
-    val appName = appInfo?.let { pm.getApplicationLabel(it) }.toString()
+fun AppNameButtonForPreview(uid: Int, value: Bytes, pm: PreviewPackageManager) {
+    val scope = rememberCoroutineScope()
+    val appName = getDummyAppLabel(uid, pm)
     val icon: Painter = painterResource(id = R.drawable.application_icon_default)
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(16.dp)
+            .clickable(onClick = {
+                scope.launch {
+                    LocalPagerState.current.animateScrollToPage(0) // Changer à la page souhaitée
+                }
+            })
             .padding(8.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
@@ -153,11 +161,13 @@ fun AppNameButtonForPreview(uid: Int, value: Bytes, pm: PreviewPackageManager, o
             modifier = Modifier.size(40.dp)
         )
         Spacer(modifier = Modifier.width(8.dp))
-        Text(
-            text = appName,
-            fontSize = 20.sp,
-            modifier = Modifier.weight(1f)
-        )
+        if (appName != null) {
+            Text(
+                text = appName,
+                fontSize = 20.sp,
+                modifier = Modifier.weight(1f)
+            )
+        }
         Spacer(modifier = Modifier.width(8.dp))
         Text(
             text = value.toString(),
@@ -166,18 +176,16 @@ fun AppNameButtonForPreview(uid: Int, value: Bytes, pm: PreviewPackageManager, o
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun AppListForPreview(appList: Map<Int, Bytes>, pm: PreviewPackageManager, modifier: Modifier = Modifier) {
+fun AppListForPreview(appList: Map<Int, Bytes>, pm: PreviewPackageManager, modifier: Modifier) {
     LazyColumn(modifier = modifier) {
         items(appList.keys.toList()) { uid ->
             appList[uid]?.let { bytes ->
                 AppNameButtonForPreview(
                     uid = uid,
                     value = bytes,
-                    pm = pm,  // Assurez-vous que votre AppNameButton utilise PackageManagerProvider
-                    onClick = {
-                        // Logique à implémenter lors du clic sur l'élément
-                    }
+                    pm = pm
                 )
             }
         }
@@ -196,14 +204,18 @@ class PreviewPackageManager : PackageManagerProvider {
     }
 
     override fun getApplicationInfo(packageName: String, flags: Int): ApplicationInfo {
-        // Créer une instance fictive d'ApplicationInfo
         return ApplicationInfo().apply {
-            // Vous pourriez simuler des valeurs spécifiques ici
         }
     }
 
     override fun getApplicationLabel(appInfo: ApplicationInfo): CharSequence {
-        // Retourner un label fictif pour l'application
         return "Dummy App"
     }
+}
+
+fun getDummyAppLabel(uid: Int, pm: PreviewPackageManager): String {
+    val packageName = pm.getPackagesForUid(uid)?.firstOrNull()
+    val appInfo = packageName?.let { pm.getApplicationInfo(it, 0) }
+    val appLabel = appInfo?.let { pm.getApplicationLabel(it) }
+    return appLabel?.toString() ?: "Unknown Application"
 }
