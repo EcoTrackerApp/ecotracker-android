@@ -1,5 +1,6 @@
 package fr.umontpellier.ecotracker
 
+import PieConsumptionChart
 import android.annotation.SuppressLint
 import android.app.Application
 import android.os.Bundle
@@ -86,7 +87,7 @@ class EcoTrackerActivity : ComponentActivity() {
                     when (it) {
                         0 -> Dashboard()
                         1 -> BarConsumptionChart()
-                        2 -> Apps()
+                        2 -> PieConsumptionChart()
                     }
                 }
             }

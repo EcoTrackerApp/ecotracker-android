@@ -57,13 +57,13 @@ fun PieConsumptionChart(
 
 // Créer un PieDataSet à partir de la liste de PieEntry
             val dataSet = PieDataSet(pieEntries, "Consommation par application")
-            dataSet.colors = ColorTemplate.PASTEL_COLORS.plus(ColorTemplate.JOYFUL_COLORS).toMutableList()
+            dataSet.colors = ColorTemplate.PASTEL_COLORS.plus(ColorTemplate.JOYFUL_COLORS).plus(ColorTemplate.COLORFUL_COLORS).plus(ColorTemplate.LIBERTY_COLORS).toMutableList()
             dataSet.valueTextColor = Color.Black.toArgb()
             dataSet.valueTextSize = 24F
             dataSet.sliceSpace = 2f
             dataSet.valueFormatter = object : ValueFormatter() {
                 override fun getFormattedValue(value: Float): String {
-                    return "${value.roundToInt()}%"
+                    return if (value > 5) "${value.roundToInt()}%" else ""
                 }
             }
 
@@ -89,19 +89,19 @@ fun PieConsumptionChart(
                 },
                 modifier = Modifier.fillMaxSize().then(modifier)
             )
-//            Row(
-//                modifier = Modifier.padding(top = 16.dp),
-//                horizontalArrangement = Arrangement.SpaceEvenly
-//            ) {
-//                pieEntries.forEachIndexed { index, pieEntry ->
-//                    val color = Color(dataSet.colors[index % dataSet.colors.size])
-//                    Box(
-//                        modifier = Modifier
-//                            .size(16.dp)
-//                            .background(color)
-//                    )
-//                    Text(text = pieEntry.label)
-//                }
+            Row(
+                modifier = Modifier.padding(top = 16.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                pieEntries.forEachIndexed { index, pieEntry ->
+                    val color = Color(dataSet.colors[index % dataSet.colors.size])
+                    Box(
+                        modifier = Modifier
+                            .size(16.dp)
+                            .background(color)
+                    )
+                    Text(text = pieEntry.label)
+                }}
         }
     }
 }
