@@ -1,6 +1,5 @@
 package fr.umontpellier.ecotracker.ui.screen
 
-import PieConsumptionChart
 import android.content.Context
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -60,7 +59,8 @@ fun Apps() {
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp),
         ) {
-            Text("Classement: ",
+            Text(
+                "Details ",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 letterSpacing = (-0.5).sp,
@@ -79,10 +79,3 @@ fun Apps() {
     }
 }
 
-@Preview
-@Composable
-fun ChartApplist() {
-    KoinApplication(application = { modules(ecoTrackerPreviewModule) }) {
-        Apps()
-    }
-}

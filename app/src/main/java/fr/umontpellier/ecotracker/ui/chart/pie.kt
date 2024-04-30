@@ -1,5 +1,5 @@
 import android.content.pm.PackageManager
-import android.graphics.Color.parseColor
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -35,12 +35,12 @@ import kotlin.math.log
 import kotlin.math.pow
 import kotlin.math.roundToInt
 
+
 @Composable
 fun PieConsumptionChart(
+    modifier: Modifier = Modifier,
     pkgNetStatService: PkgNetStatService = koinInject(),
-    applimit: Int = 10,
-    packageService: PackageService = koinInject(),
-    modifier: Modifier = Modifier
+    applimit: Int = 10
 ) {
     // Modifier la fonction scaleValue pour arrondir les bytes à l'unité
     fun scaleValue(value: Float): String {

@@ -15,11 +15,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -31,6 +28,7 @@ import fr.umontpellier.ecotracker.service.EcoTrackerConfig
 import fr.umontpellier.ecotracker.service.PackageService
 import fr.umontpellier.ecotracker.service.model.unit.Bytes
 import fr.umontpellier.ecotracker.service.netstat.PkgNetStatService
+import fr.umontpellier.ecotracker.ui.LocalPagerState
 import kotlinx.coroutines.launch
 import org.koin.compose.KoinApplication
 import org.koin.compose.koinInject
@@ -86,6 +84,7 @@ fun String.truncate (length: Int): String {
 fun AppButton(
     uid: Int,
     consumption: Bytes,
+    config: EcoTrackerConfig = koinInject(),
     packageService: PackageService = koinInject(),
     buttonSize: Int = 50,
 ) {
@@ -100,7 +99,8 @@ fun AppButton(
             .fillMaxWidth()
             .clickable(onClick = {
                 scope.launch {
-                    // pageState.animateScrollToPage(0) // Changer à la page souhaitée
+                    config.currentApp = uid
+                    pageState.animateScrollToPage(2)
                 }
             }),
         verticalAlignment = Alignment.CenterVertically,
