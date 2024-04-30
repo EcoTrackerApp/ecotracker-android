@@ -1,5 +1,4 @@
-package fr.umontpellier.ecotracker.ui.chart
-
+import android.content.pm.PackageManager
 import android.graphics.Color.parseColor
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Card
@@ -39,6 +38,7 @@ import kotlin.math.roundToInt
 @Composable
 fun PieConsumptionChart(
     pkgNetStatService: PkgNetStatService = koinInject(),
+    applimit: Int = 10,
     packageService: PackageService = koinInject(),
     modifier: Modifier = Modifier
 ) {
@@ -58,6 +58,7 @@ fun PieConsumptionChart(
         colors = CardDefaults.cardColors(Color.White),
         modifier = Modifier
             .fillMaxWidth()
+            .aspectRatio(0.7f)
             .padding(16.dp)
     ) {
         // Ajouter le PieData à votre PieChart
@@ -78,7 +79,7 @@ fun PieConsumptionChart(
                             PieEntry(totalBytes.toFloat(), packageService.appLabel(app))
                         }
                         .sortedByDescending { it.value }
-                        .take(10)
+                        .take(applimit)
                         .toList()
 
                     // Créer un PieDataSet à partir de la liste de PieEntry

@@ -1,8 +1,5 @@
 package fr.umontpellier.ecotracker.ui.screen
 
-import PieConsumptionChart
-import android.content.Context
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -21,11 +18,13 @@ import fr.umontpellier.ecotracker.ui.component.AppColumn
 import org.koin.compose.KoinApplication
 
 @Composable
-fun Apps() {
+fun GlobalChart() {
+    val lightBlue = Color(48, 114, 255)
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Blue.copy(alpha = 0.5f))
+            .background(lightBlue)
     ) {
 
         Row(
@@ -33,12 +32,12 @@ fun Apps() {
                 .fillMaxWidth()
         ) {
             Text(
-                "Applications",
+                "Graphes",
                 fontSize = 25.sp,
                 fontWeight = FontWeight.ExtraBold,
                 letterSpacing = (-0.5).sp,
-                color = Color.White,
-                modifier = Modifier.padding(top = 10.dp, start = 16.dp))
+                color = Color.White
+            )
         }
 
         Surface(
@@ -47,24 +46,26 @@ fun Apps() {
                 .weight(2f)
                 .padding(horizontal = 12.dp, vertical = 2.dp),
             shape = RoundedCornerShape(10.dp),
-            //shadowElevation = 4.dp,  // Utilisation de shadowElevation pour l'effet d'élévation
+            shadowElevation = 4.dp,  // Utilisation de shadowElevation pour l'effet d'élévation
             color = Color.White
         ) {
-            PieConsumptionChart(applimit = 10)
+            BarConsumptionChart()
         }
 
-        Spacer(modifier = Modifier.height(6.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp),
         ) {
-            Text("Classement: ",
+            Text(
+                "Classement ",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 letterSpacing = (-0.5).sp,
-                color = Color.White)
+                color = Color.White
+            )
         }
 
         Spacer(modifier = Modifier.height(4.dp))
@@ -74,7 +75,7 @@ fun Apps() {
                 .fillMaxWidth()
                 .weight(1f)
         ) {
-            AppColumn(applimit = 10, buttonSize = 25, spaceBtwnItems = 1)
+            AppColumn(applimit = 3)
         }
     }
 }
@@ -83,6 +84,6 @@ fun Apps() {
 @Composable
 fun ChartApplist() {
     KoinApplication(application = { modules(ecoTrackerPreviewModule) }) {
-        Apps()
+        GlobalChart()
     }
 }
