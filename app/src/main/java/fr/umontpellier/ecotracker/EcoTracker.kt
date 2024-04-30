@@ -16,6 +16,7 @@ import fr.umontpellier.ecotracker.service.model.ModelService
 import fr.umontpellier.ecotracker.service.netstat.AndroidNetStartService
 import fr.umontpellier.ecotracker.service.netstat.DummyPkgNetStatService
 import fr.umontpellier.ecotracker.service.netstat.PkgNetStatService
+import fr.umontpellier.ecotracker.ui.EcoTrackerConfigSaver
 import fr.umontpellier.ecotracker.ui.EcoTrackerLayout
 import fr.umontpellier.ecotracker.ui.dialog.UsageAccessDialog
 import fr.umontpellier.ecotracker.ui.screen.Apps
@@ -88,6 +89,7 @@ class EcoTrackerActivity : ComponentActivity() {
         androidNetStartService.fetchAndCache()
 
         setContent {
+            EcoTrackerConfigSaver()
             // Dessine la barre en bas
             EcoTrackerLayout {
                 UsageAccessDialog {

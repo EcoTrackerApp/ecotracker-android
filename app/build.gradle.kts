@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.com.android.application)
     alias(libs.plugins.org.jetbrains.kotlin.android)
+    alias(libs.plugins.org.jetbrains.kotlin.serialization)
 }
 
 android {
@@ -88,6 +89,9 @@ dependencies {
 
     // graphs
     implementation(libs.mpandroidchart)
+
+    // serialization
+    implementation(libs.kotlinx.serialization.json)
 
     // Si un jour on fait des tests, lol.
     testImplementation(libs.junit)
