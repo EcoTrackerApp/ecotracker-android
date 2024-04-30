@@ -1,3 +1,4 @@
+import android.content.pm.PackageManager
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Card
@@ -16,19 +17,16 @@ import com.github.mikephil.charting.data.PieDataSet
 import com.github.mikephil.charting.data.PieEntry
 import com.github.mikephil.charting.utils.ColorTemplate
 import fr.umontpellier.ecotracker.ecoTrackerPreviewModule
-import fr.umontpellier.ecotracker.service.model.ModelService
 import fr.umontpellier.ecotracker.service.model.unit.Bytes
 import fr.umontpellier.ecotracker.service.netstat.PkgNetStatService
 import org.koin.compose.KoinApplication
 import org.koin.compose.koinInject
-import androidx.compose.ui.Alignment
 import com.github.mikephil.charting.formatter.ValueFormatter
 import kotlin.math.roundToInt
 
 @Composable
 fun PieConsumptionChart(
     pkgNetStatService: PkgNetStatService = koinInject(),
-    modelService: ModelService = koinInject(),
     modifier: Modifier = Modifier
 ) {
 
@@ -48,12 +46,16 @@ fun PieConsumptionChart(
 
             // Créer une liste de PieEntry pour chaque application
             val pieEntries = monthConsumptionPerApp.values
+                .asSequence()
                 .flatMap { it.entries }
                 .groupBy({ it.key }, { it.value })
                 .map { (app, bytesList) ->
-                    val totalBytes = bytesList.sumByDouble { it.value.toDouble() }
+                    val totalBytes = bytesList.sumOf { it.value.toDouble() }
                     PieEntry(totalBytes.toFloat(), app)
                 }
+                .sortedByDescending { it.value }
+                .take(10)
+                .toList()
 
 // Créer un PieDataSet à partir de la liste de PieEntry
             val dataSet = PieDataSet(pieEntries, "Consommation par application")
@@ -89,19 +91,6 @@ fun PieConsumptionChart(
                 },
                 modifier = Modifier.fillMaxSize().then(modifier)
             )
-            Row(
-                modifier = Modifier.padding(top = 16.dp),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                pieEntries.forEachIndexed { index, pieEntry ->
-                    val color = Color(dataSet.colors[index % dataSet.colors.size])
-                    Box(
-                        modifier = Modifier
-                            .size(16.dp)
-                            .background(color)
-                    )
-                    Text(text = pieEntry.label)
-                }}
         }
     }
 }
