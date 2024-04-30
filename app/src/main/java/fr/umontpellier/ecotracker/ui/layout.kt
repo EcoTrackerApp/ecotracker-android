@@ -2,6 +2,7 @@ package fr.umontpellier.ecotracker.ui
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -26,13 +27,9 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import fr.umontpellier.ecotracker.service.EcoTrackerConfig
 import fr.umontpellier.ecotracker.service.netstat.PkgNetStatService
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.koin.compose.koinInject
-import java.io.File
-import java.io.FileInputStream
-import java.io.FileOutputStream
 
 @OptIn(ExperimentalFoundationApi::class)
 val LocalPagerState = staticCompositionLocalOf<PagerState> {
@@ -118,15 +115,24 @@ fun EcoTrackerConfigSaver(
 ) {
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
-            val path = context.getExternalFilesDir(null)
-            val file = File(path, "config.json")
             if (event == Lifecycle.Event.ON_CREATE) {
-                val text = FileInputStream(file).reader().readText()
-                val fileConfig = Json.decodeFromString<EcoTrackerConfig>(text)
-                config.dates = fileConfig.dates
-                config.precision = fileConfig.precision
-                config.model = fileConfig.model
-                config.apps.putAll(fileConfig.apps)
+                try {
+                    val text = context.openFileInput("config.json")?.bufferedReader()?.run {
+                        val t = this.readText()
+                        this.close()
+                        t
+                    }
+                    Log.i("ecotracker", "Reading config $text")
+                    val fileConfig =
+                        if (text == null) EcoTrackerConfig() else Json.decodeFromString<EcoTrackerConfig>(text)
+                    config.dates = fileConfig.dates
+                    config.precision = fileConfig.precision
+                    config.model = fileConfig.model
+                    config.apps.putAll(fileConfig.apps)
+                } catch (e: Exception) {
+                    Log.e("ecotracker", "Failed to read config $e")
+                    e.printStackTrace()
+                }
                 return@LifecycleEventObserver
             }
 
@@ -134,8 +140,11 @@ fun EcoTrackerConfigSaver(
                 return@LifecycleEventObserver
 
             val json = Json.encodeToString(config)
-            FileOutputStream(file).writer()
-                .write(json)
+            context.openFileOutput("config.json", Context.MODE_PRIVATE)?.bufferedWriter()?.apply {
+                write(json)
+                close()
+            }
+            Log.i("ecotracker", "Config written:\n$json")
         }
         lifecycleOwner.lifecycle.addObserver(observer)
         onDispose {
