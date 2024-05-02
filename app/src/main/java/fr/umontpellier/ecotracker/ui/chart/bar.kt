@@ -116,7 +116,7 @@ fun BarConsumptionChart(
                             override fun getFormattedValue(value: Float): String {
                                 val instant = monthConsumptionSent.keys.elementAtOrNull(value.toInt())
                                 return if (instant != null) {
-                                    val formatter = DateTimeFormatter.ofPattern("dd")
+                                    val formatter = DateTimeFormatter.ofPattern("dd/MM")
                                     formatter.format(instant.atZone(ZoneId.systemDefault()))
                                 } else {
                                     ""
