@@ -6,7 +6,10 @@ import android.app.Application
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import fr.umontpellier.ecotracker.service.AndroidPackageService
+import fr.umontpellier.ecotracker.service.DummyPackageService
 import fr.umontpellier.ecotracker.service.EcoTrackerConfig
+import fr.umontpellier.ecotracker.service.PackageService
 import fr.umontpellier.ecotracker.service.model.AndroidModelService
 import fr.umontpellier.ecotracker.service.model.DummyModelService
 import fr.umontpellier.ecotracker.service.model.ModelService
@@ -18,7 +21,6 @@ import fr.umontpellier.ecotracker.ui.chart.BarConsumptionChart
 import fr.umontpellier.ecotracker.ui.dialog.UsageAccessDialog
 import fr.umontpellier.ecotracker.ui.screen.Apps
 import fr.umontpellier.ecotracker.ui.screen.Dashboard
-import fr.umontpellier.ecotracker.ui.screen.Detail
 import org.koin.android.ext.android.inject
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
@@ -38,6 +40,9 @@ private val ecoTrackerModule = module {
     singleOf(::AndroidModelService) {
         bind<ModelService>()
     }
+    singleOf(::AndroidPackageService) {
+        bind<PackageService>()
+    }
 }
 
 val ecoTrackerPreviewModule = module {
@@ -49,6 +54,9 @@ val ecoTrackerPreviewModule = module {
     }
     singleOf(::DummyModelService) {
         bind<ModelService>()
+    }
+    singleOf(::DummyPackageService) {
+        bind<PackageService>()
     }
 }
 
@@ -86,8 +94,8 @@ class EcoTrackerActivity : ComponentActivity() {
                 UsageAccessDialog {
                     when (it) {
                         0 -> Dashboard()
-                        1 -> BarConsumptionChart()
-                        2 -> PieConsumptionChart()
+                        1 -> Apps()
+                        2 -> BarConsumptionChart()
                     }
                 }
             }

@@ -1,12 +1,16 @@
 package fr.umontpellier.ecotracker.ui.chart
 
 import android.graphics.Color.parseColor
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -28,12 +32,27 @@ import org.koin.compose.KoinApplication
 import org.koin.compose.koinInject
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import kotlin.math.abs
+import kotlin.math.log
+import kotlin.math.pow
 
 @Composable
 fun BarConsumptionChart(
     pkgNetStatService: PkgNetStatService = koinInject(),
     modifier: Modifier = Modifier
 ) {
+    // Function to scale the value in Bytes
+    fun scaleValue(value: Float): String {
+        val absBytes = abs(value)
+        val unit = "B"
+        if (absBytes < 1000) {
+            return "$value $unit"
+        }
+        val exp = (log(absBytes.toDouble(), 10.0) / log(1000.0, 10.0)).toInt()
+        val pre = "kMGTPE"[exp - 1]
+        return String.format("%.1f %c%s", value / 1000.0.pow(exp), pre, unit)
+    }
+
     Card(
         colors = CardDefaults.cardColors(Color.White),
         modifier = Modifier
@@ -41,102 +60,110 @@ fun BarConsumptionChart(
             .aspectRatio(0.7f)
             .padding(16.dp)
     ) {
-        Box(
-            modifier = Modifier
-                .weight(1f)
-                .then(modifier)
-        ) {
-            AndroidView(
-                factory = { context ->
-                    BarChart(context).apply {
-                        // Get the data sent from the cache in Bytes
-                        val monthConsumptionSent = pkgNetStatService.cache.appNetStats.map { (day, perApp) ->
-                            day to Bytes(perApp.map { (_, data) -> data.sent.value }.sum())
-                        }.toMap()
+        AndroidView(
+            factory = { context ->
+                BarChart(context).apply {
+                    // Get the data sent from the cache in Bytes
+                    val monthConsumptionSent = pkgNetStatService.cache.appNetStats.map { (day, perApp) ->
+                        day to Bytes(perApp.map { (_, data) -> data.sent.value }.sum())
+                    }.toMap()
 
-                        // Get the data received from the cache in Bytes
-                        val monthConsumptionReceived = pkgNetStatService.cache.appNetStats.map { (day, perApp) ->
-                            day to Bytes(perApp.map { (_, data) -> data.received.value }.sum())
-                        }.toMap()
+                    // Get the data received from the cache in Bytes
+                    val monthConsumptionReceived = pkgNetStatService.cache.appNetStats.map { (day, perApp) ->
+                        day to Bytes(perApp.map { (_, data) -> data.received.value }.sum())
+                    }.toMap()
 
-                        // Create the entries for the chart with sent data
-                        val entriesSent = monthConsumptionSent.entries.mapIndexed { index, (day, bytes) ->
-                            BarEntry(index.toFloat(), bytes.value.toFloat())
-                        }
+                    // Create the entries for the chart with sent and received data
+                    val entries = monthConsumptionSent.entries.mapIndexed { index, (day, bytesSent) ->
+                        val bytesReceived = monthConsumptionReceived[day]?.value ?: 0f
+                        BarEntry(index.toFloat(), floatArrayOf(bytesSent.value.toFloat(), bytesReceived.toFloat()))
+                    }
 
-                        // Create the entries for the chart with received data
-                        val entriesReceived = monthConsumptionReceived.entries.mapIndexed { index, (day, bytes) ->
-                            BarEntry(index.toFloat(), bytes.value.toFloat())
-                        }
+                    // Create the data set for the chart
+                    val dataSet = BarDataSet(entries, "").apply {
+                        colors = listOf(parseColor("#fcae60"), parseColor("#2a89b5"))
+                        setDrawValues(false)
+                        highLightAlpha = 0
+                        // Set the labels for the legend
+                        setStackLabels(arrayOf("Reçu", "Envoyé"))
 
-                        // Create the data set for the chart with sent data
-                        val dataSetSent = BarDataSet(entriesSent, "Envoyé").apply {
-                            colors = listOf(parseColor("#fcae60"));
-                            setDrawValues(false);
-                        }
+                        // Set the corner radius for the bars
+                        barShadowColor = Color.Black.toArgb()
+                        barBorderWidth = 1f
+                        barBorderColor = Color.Black.toArgb()
+                    }
 
-                        // Create the data set for the chart with received data
-                        val dataSetReceived = BarDataSet(entriesReceived, "Reçu").apply {
-                            colors = listOf(parseColor("#2a7bb5"));
-                            setDrawValues(false);
-                        }
+                    // Add the data set to the chart
+                    data = BarData(dataSet)
 
-                        // Add the data sets to the chart
-                        data = BarData(dataSetReceived, dataSetSent)
+                    // Add a listener to show the values on the chart
+                    val chartClickListener = object : OnChartValueSelectedListener {
+                        override fun onValueSelected(e: Entry?, h: Highlight?) {
+                            val textSize = 12f // Size of the text
 
-                        // Add a listener to show the values on the chart
-                        val chartClickListener = object : OnChartValueSelectedListener {
-                            override fun onValueSelected(e: Entry?, h: Highlight?) {
-                                dataSetSent.setDrawValues(true)
-                                dataSetReceived.setDrawValues(true)
-                                invalidate()
-                            }
-
-                            override fun onNothingSelected() {
-                                dataSetSent.setDrawValues(false)
-                                dataSetReceived.setDrawValues(false)
-                                invalidate()
-                            }
-                        }
-                        setOnChartValueSelectedListener(chartClickListener)
-
-                        // chart configuration
-                        legend.isEnabled = true // Enable the legend
-                        legend.textSize = 12f // Set the text size for the legend
-                        legend.form = Legend.LegendForm.CIRCLE // Set the form/shape of the legend
-                        description.isEnabled = false // Disable the description
-                        //animateXY(1000, 1000) // Enable the animation
-
-                        // axis configuration
-                        getAxis(YAxis.AxisDependency.LEFT).textSize = 12f //  Set the text size for the left axis
-                        xAxis.setDrawGridLines(false) // Disable the x axis grid lines
-                        xAxis.position = XAxis.XAxisPosition.BOTTOM // Set the position of the x axis
-                        // Set the formatter for the x axis
-                        xAxis.valueFormatter = object : ValueFormatter() {
-                            override fun getFormattedValue(value: Float): String {
-                                val instant = monthConsumptionSent.keys.elementAtOrNull(value.toInt())
-                                return if (instant != null) {
-                                    val formatter = DateTimeFormatter.ofPattern("dd/MM")
-                                    formatter.format(instant.atZone(ZoneId.systemDefault()))
-                                } else {
-                                    ""
+                            dataSet.valueFormatter = object : ValueFormatter() {
+                                override fun getFormattedValue(value: Float): String {
+                                    return scaleValue(value);
                                 }
                             }
+
+                            dataSet.valueTextSize = textSize
+                            dataSet.setDrawValues(true)
+
+                            invalidate()
                         }
 
-                        axisLeft.axisMinimum = 0f // Set the minimum value for the left axis
-                        axisRight.isEnabled = false // Disable the right axis
-
-                        // Disable the zoom and drag
-                        setScaleEnabled(false)
-                        setPinchZoom(false)
-                        isDragEnabled = false
-
+                        override fun onNothingSelected() {
+                            dataSet.setDrawValues(false)
+                            invalidate()
+                        }
                     }
-                },
-                modifier = Modifier.fillMaxSize()
-            )
-        }
+                    setOnChartValueSelectedListener(chartClickListener)
+                    // chart configuration
+                    legend.isEnabled = true // Enable the legend
+                    legend.textSize = 15f // Set the text size for the legend
+                    legend.form = Legend.LegendForm.CIRCLE // Set the form/shape of the legend
+                    description.isEnabled = false // Disable the description
+                    animateXY(1000, 1000) // Enable the animation
+
+                    // axis configuration
+                    getAxis(YAxis.AxisDependency.LEFT).textSize = 12f //  Set the text size for the left axis
+                    xAxis.setDrawGridLines(false) // Disable the x axis grid lines
+                    xAxis.position = XAxis.XAxisPosition.BOTTOM // Set the position of the x axis
+
+                    // Value formatter
+                    // Set the formatter for the x axis
+                    xAxis.valueFormatter = object : ValueFormatter() {
+                        override fun getFormattedValue(value: Float): String {
+                            val instant = monthConsumptionSent.keys.elementAtOrNull(value.toInt())
+                            return if (instant != null) {
+                                val formatter = DateTimeFormatter.ofPattern("dd/MM")
+                                formatter.format(instant.atZone(ZoneId.systemDefault()))
+                            } else {
+                                ""
+                            }
+                        }
+                    }
+
+                    // Set the formatter for the x axis
+                    axisLeft.valueFormatter = object : ValueFormatter() {
+                        override fun getFormattedValue(value: Float): String {
+                            return scaleValue(value)
+                        }
+                    }
+
+                    axisLeft.axisMinimum = 0f // Set the minimum value for the left axis
+                    axisRight.isEnabled = false // Disable the right axis
+
+                    // Disable the zoom and drag
+                    setScaleEnabled(false)
+                    setPinchZoom(false)
+                    isDragEnabled = false
+
+                }
+            },
+            modifier = Modifier.fillMaxSize().then(modifier)
+        )
     }
 }
 

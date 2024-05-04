@@ -10,12 +10,24 @@ interface ModelService {
     val total: CO2
     val received: CO2
     val sent: CO2
+
+    val results: Map<Instant, LinkedHashMap<Int, Model.AppEmission>>
 }
 
-class DummyModelService : ModelService {
+class DummyModelService(val pkgNetStatService: PkgNetStatService) : ModelService {
     override val total = CO2(100.0)
     override val sent = CO2(50.0)
     override val received = CO2(50.0)
+
+    override val results: Map<Instant, LinkedHashMap<Int, Model.AppEmission>>
+        get() = pkgNetStatService.cache.appNetStats.map { (date, map) ->
+            date to map.map { (uid, arr) ->
+                uid to OneByte.estimate(
+                    arr,
+                    EcoTrackerConfig.AppConfig()
+                )
+            }.sortedByDescending { it.second.total.value }.toMap(LinkedHashMap())
+        }.toMap()
 }
 
 class AndroidModelService(
@@ -30,7 +42,7 @@ class AndroidModelService(
     val model: Model
         get() = this[config.model]!!
 
-    val results: Map<Instant, LinkedHashMap<Int, Model.AppEmission>>
+    override val results: Map<Instant, LinkedHashMap<Int, Model.AppEmission>>
         get() = pkgNetStatService.cache.appNetStats.map { (date, map) ->
             date to map.map { (uid, arr) ->
                 uid to model.estimate(
