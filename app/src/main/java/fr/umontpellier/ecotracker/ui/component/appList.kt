@@ -11,7 +11,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -29,6 +30,7 @@ import fr.umontpellier.ecotracker.service.PackageService
 import fr.umontpellier.ecotracker.service.model.unit.Bytes
 import fr.umontpellier.ecotracker.service.netstat.PkgNetStatService
 import fr.umontpellier.ecotracker.ui.LocalPagerState
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.compose.KoinApplication
 import org.koin.compose.koinInject
@@ -37,8 +39,8 @@ import org.koin.compose.koinInject
 @Composable
 fun AppColumn(
     pkgNetStatService: PkgNetStatService = koinInject(),
+    limit: Int = 10,
     modifier: Modifier = Modifier,
-    limit: Int = 10
 ) {
     val appTotals = pkgNetStatService.cache.appNetStats.flatMap { entry ->
         entry.value.mapNotNull { (uid, netStat) ->
@@ -91,7 +93,8 @@ fun AppButton(
             .clickable(onClick = {
                 scope.launch {
                     config.currentApp = uid
-                    pageState.animateScrollToPage(2)
+                    delay(100L)
+                    pageState.animateScrollToPage(3)
                 }
             }),
         verticalAlignment = Alignment.CenterVertically,

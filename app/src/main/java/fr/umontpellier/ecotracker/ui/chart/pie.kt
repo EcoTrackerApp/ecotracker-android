@@ -1,5 +1,5 @@
-import android.content.pm.PackageManager
-import androidx.compose.foundation.background
+package fr.umontpellier.ecotracker.ui.chart
+
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -17,15 +17,14 @@ import com.github.mikephil.charting.charts.PieChart
 import com.github.mikephil.charting.data.PieData
 import com.github.mikephil.charting.data.PieDataSet
 import com.github.mikephil.charting.data.PieEntry
+import com.github.mikephil.charting.formatter.ValueFormatter
 import com.github.mikephil.charting.utils.ColorTemplate
 import fr.umontpellier.ecotracker.ecoTrackerPreviewModule
 import fr.umontpellier.ecotracker.service.model.unit.Bytes
 import fr.umontpellier.ecotracker.service.netstat.PkgNetStatService
 import org.koin.compose.KoinApplication
 import org.koin.compose.koinInject
-import com.github.mikephil.charting.formatter.ValueFormatter
 import kotlin.math.roundToInt
-
 
 @Composable
 fun PieConsumptionChart(
@@ -42,14 +41,6 @@ fun PieConsumptionChart(
             .padding(16.dp)
     ) {
         Column {
-            Text(
-                text = "Consommation",
-                modifier = Modifier
-                    .align(Alignment.Start)
-                    .padding(20.dp, top = 25.dp),
-                fontSize = 20.sp
-            )
-
             val monthConsumptionPerApp = pkgNetStatService.cache.appNetStats.map { (day, perApp) ->
                 day to perApp.map { (app, data) -> app to Bytes(data.total.value) }.toMap()
             }.toMap()
@@ -69,7 +60,9 @@ fun PieConsumptionChart(
 
 // Créer un PieDataSet à partir de la liste de PieEntry
             val dataSet = PieDataSet(pieEntries, "Consommation par application")
-            dataSet.colors = ColorTemplate.PASTEL_COLORS.plus(ColorTemplate.JOYFUL_COLORS).plus(ColorTemplate.COLORFUL_COLORS).plus(ColorTemplate.LIBERTY_COLORS).toMutableList()
+            dataSet.colors =
+                ColorTemplate.PASTEL_COLORS.plus(ColorTemplate.JOYFUL_COLORS).plus(ColorTemplate.COLORFUL_COLORS)
+                    .plus(ColorTemplate.LIBERTY_COLORS).toMutableList()
             dataSet.valueTextColor = Color.Black.toArgb()
             dataSet.valueTextSize = 24F
             dataSet.sliceSpace = 2f
@@ -100,7 +93,9 @@ fun PieConsumptionChart(
 
                     }
                 },
-                modifier = Modifier.fillMaxSize().then(modifier)
+                modifier = Modifier
+                    .fillMaxSize()
+                    .then(modifier)
             )
         }
     }
