@@ -1,17 +1,17 @@
 package fr.umontpellier.ecotracker.ui.chart
 
 import android.graphics.Color.parseColor
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.components.XAxis
@@ -62,11 +62,13 @@ fun LineConsumptionChart(
                 LineChart(context).apply {
                     // Préparation des données
                     val monthConsumptionSent = pkgNetStatService.cache.appNetStats.map { (day, perApp) ->
-                        day to Bytes(perApp.filter { (app, _) -> app == appId }.map { (_, data) -> data.sent.value }.sum())
+                        day to Bytes(perApp.filter { (app, _) -> app == appId }.map { (_, data) -> data.sent.value }
+                            .sum())
                     }.toMap()
 
                     val monthConsumptionReceived = pkgNetStatService.cache.appNetStats.map { (day, perApp) ->
-                        day to Bytes(perApp.filter { (app, _) -> app == appId }.map { (_, data) -> data.received.value }.sum())
+                        day to Bytes(perApp.filter { (app, _) -> app == appId }.map { (_, data) -> data.received.value }
+                            .sum())
                     }.toMap()
 
                     val entriesSent = monthConsumptionSent.entries.mapIndexed { index, (day, bytesList) ->
@@ -132,7 +134,7 @@ fun LineConsumptionChart(
 
 @Preview
 @Composable
-fun PieChartPreview() {
+fun LineChartPreview() {
     KoinApplication(application = { modules(ecoTrackerPreviewModule) }) {
         LineConsumptionChart(1)
     }
