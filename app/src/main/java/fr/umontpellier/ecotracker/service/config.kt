@@ -29,7 +29,11 @@ data class EcoTrackerConfig(
     /**
      * Les configurations spécifiques aux applications.
      */
-    val apps: MutableMap<Int, AppConfig> = mutableMapOf()
+    val apps: MutableMap<Int, AppConfig> = mutableMapOf(),
+    /**
+     * Application que l'on est en train de configurer
+     */
+    var currentApp: Int? = null
 ) {
 
     /**
