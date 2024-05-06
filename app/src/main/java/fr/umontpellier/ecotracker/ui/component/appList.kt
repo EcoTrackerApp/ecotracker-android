@@ -18,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -71,6 +72,13 @@ fun AppColumn(
     }
 }
 
+fun String.truncate (length: Int): String {
+    return if (this.length > length) {
+        this.substring(0, length) + "..."
+    } else {
+        this
+    }
+ }
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -117,11 +125,13 @@ fun AppButton(
         )
         Spacer(modifier = Modifier.width(8.dp))
         Text(
-            text = packageService.appLabel(uid),
+            text = packageService.appLabel(uid).truncate(23),
             fontSize = 18.sp,
             fontWeight = FontWeight.Medium,
             modifier = Modifier.padding(horizontal = 1.dp),
-            letterSpacing = (-0.5).sp
+            letterSpacing = (-0.5).sp,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
         )
         Spacer(modifier = Modifier.width(8.dp))
         Text(
