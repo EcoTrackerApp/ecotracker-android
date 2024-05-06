@@ -108,6 +108,7 @@ fun LineConsumptionChart(
                     setScaleEnabled(false)
                     setPinchZoom(false)
                     isDragEnabled = false
+                    animateX(1000)
 
                     // Configuration de l'axe X
                     this.axisRight.isEnabled = false

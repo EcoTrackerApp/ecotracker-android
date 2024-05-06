@@ -100,6 +100,7 @@ fun PieConsumptionChart(
                         this.setTransparentCircleAlpha(110)
                         this.legend.isEnabled = false
                         this.description.isEnabled = false
+                        animateXY(1000, 1000)
                     }
                 },
                 modifier = Modifier.fillMaxSize().then(modifier)
