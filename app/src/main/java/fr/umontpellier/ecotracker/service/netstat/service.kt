@@ -97,16 +97,16 @@ class DummyPkgNetStatService : PkgNetStatService {
         get() = PkgNetStatService.Result(
             now().minus(3, ChronoUnit.DAYS), now(), Duration.ofDays(1), mapOf(
                 now().minus(3, ChronoUnit.DAYS) to mapOf(
-                    1 to PkgNetStatService.Result.App(ConnectionType.MOBILE, Bytes(500), Bytes(500)),
-                    2 to PkgNetStatService.Result.App(ConnectionType.MOBILE, Bytes(500), Bytes(500))
+                    1 to PkgNetStatService.Result.App(ConnectionType.MOBILE, Bytes(200), Bytes(500)),
+                    2 to PkgNetStatService.Result.App(ConnectionType.MOBILE, Bytes(350), Bytes(400))
                 ),
                 now().minus(2, ChronoUnit.DAYS) to mapOf(
-                    1 to PkgNetStatService.Result.App(ConnectionType.MOBILE, Bytes(500), Bytes(500)),
-                    2 to PkgNetStatService.Result.App(ConnectionType.MOBILE, Bytes(500), Bytes(500))
+                    1 to PkgNetStatService.Result.App(ConnectionType.MOBILE, Bytes(550), Bytes(600)),
+                    2 to PkgNetStatService.Result.App(ConnectionType.MOBILE, Bytes(650), Bytes(700))
                 ),
                 now().minus(1, ChronoUnit.DAYS) to mapOf(
-                    1 to PkgNetStatService.Result.App(ConnectionType.MOBILE, Bytes(500), Bytes(500)),
-                    2 to PkgNetStatService.Result.App(ConnectionType.MOBILE, Bytes(500), Bytes(500))
+                    1 to PkgNetStatService.Result.App(ConnectionType.MOBILE, Bytes(750), Bytes(800)),
+                    2 to PkgNetStatService.Result.App(ConnectionType.MOBILE, Bytes(850), Bytes(900))
                 )
             )
         )

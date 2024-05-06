@@ -3,7 +3,7 @@ package fr.umontpellier.ecotracker.ui.component
 import android.content.Context
 import android.view.ViewGroup
 import android.widget.ImageView
-import androidx.compose.foundation.Image
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -15,9 +15,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -26,9 +24,11 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import fr.umontpellier.ecotracker.R
 import fr.umontpellier.ecotracker.ecoTrackerPreviewModule
+import fr.umontpellier.ecotracker.service.EcoTrackerConfig
 import fr.umontpellier.ecotracker.service.PackageService
 import fr.umontpellier.ecotracker.service.model.unit.Bytes
 import fr.umontpellier.ecotracker.service.netstat.PkgNetStatService
+import fr.umontpellier.ecotracker.ui.LocalPagerState
 import kotlinx.coroutines.launch
 import org.koin.compose.KoinApplication
 import org.koin.compose.koinInject
@@ -70,14 +70,17 @@ fun AppColumn(
 }
 
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun AppButton(
     uid: Int,
     consumption: Bytes,
-    packageService: PackageService = koinInject()
+    packageService: PackageService = koinInject(),
+    config: EcoTrackerConfig = koinInject()
 ) {
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
+    val pageState = LocalPagerState.current
     val defaultDrawable = ContextCompat.getDrawable(context, R.drawable.application_icon_default)
     val appDrawable = packageService.appIcon(uid) ?: defaultDrawable
 
@@ -87,7 +90,8 @@ fun AppButton(
             .fillMaxWidth()
             .clickable(onClick = {
                 scope.launch {
-                    // pageState.animateScrollToPage(0) // Changer à la page souhaitée
+                    config.currentApp = uid
+                    pageState.animateScrollToPage(2)
                 }
             }),
         verticalAlignment = Alignment.CenterVertically,
