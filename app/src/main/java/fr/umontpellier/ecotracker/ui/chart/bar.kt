@@ -57,7 +57,7 @@ fun BarConsumptionChart(
         colors = CardDefaults.cardColors(Color.White),
         modifier = Modifier
             .fillMaxWidth()
-            .aspectRatio(0.7f)
+            .aspectRatio(0.75f)
             .padding(16.dp)
     ) {
         AndroidView(
