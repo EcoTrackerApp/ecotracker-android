@@ -16,7 +16,7 @@ fun PackageManager.getPackageName(uid: Int): String {
             }
         }
         ?: "Système"
-}        // BarChart occupant 2/3 de l'écran en hauteur
+}
 
 fun PackageManager.getAppIcon(uid: Int): Drawable? {
     val packages = getPackagesForUid(uid)

@@ -30,7 +30,7 @@ data class EcoTrackerConfig(
     /**
      * Le modèle utilisé dans l'application
      */
-    var model: String = "1byte",
+    var model: String = "swd",
     /**
      * Les configurations spécifiques aux applications.
      */
