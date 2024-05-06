@@ -57,15 +57,6 @@ fun LineConsumptionChart(
             .aspectRatio(0.7f)
             .padding(16.dp)
     ) {
-        Column {
-            Text(
-                text = "Consommation",
-                modifier = Modifier
-                    .align(Alignment.Start)
-                    .padding(20.dp, top = 25.dp, bottom = 25.dp),
-                fontSize = 20.sp
-            )
-        }
         AndroidView(
             factory = { context ->
                 LineChart(context).apply {
