@@ -35,7 +35,8 @@ fun Apps() {
                 fontSize = 25.sp,
                 fontWeight = FontWeight.ExtraBold,
                 letterSpacing = (-0.5).sp,
-                color = Color.White)
+                color = Color.White,
+                modifier = Modifier.padding(top = 10.dp, start = 16.dp))
         }
 
         Surface(
@@ -44,13 +45,13 @@ fun Apps() {
                 .weight(2f)
                 .padding(16.dp),
             shape = RoundedCornerShape(10.dp),
-            shadowElevation = 4.dp,  // Utilisation de shadowElevation pour l'effet d'élévation
+            //shadowElevation = 4.dp,  // Utilisation de shadowElevation pour l'effet d'élévation
             color = Color.White
         ) {
             BarConsumptionChart()
         }
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(6.dp))
 
         Row(
             modifier = Modifier
