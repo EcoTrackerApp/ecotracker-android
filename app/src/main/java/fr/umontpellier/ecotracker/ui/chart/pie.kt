@@ -70,7 +70,7 @@ fun PieConsumptionChart(
 // Créer un PieDataSet à partir de la liste de PieEntry
             val dataSet = PieDataSet(pieEntries, "Consommation par application")
             dataSet.colors = ColorTemplate.PASTEL_COLORS.plus(ColorTemplate.JOYFUL_COLORS).plus(ColorTemplate.COLORFUL_COLORS).plus(ColorTemplate.LIBERTY_COLORS).toMutableList()
-            dataSet.valueTextColor = Color.Black.toArgb()
+            dataSet.valueTextColor = Color.White.toArgb()
             dataSet.valueTextSize = 24F
             dataSet.sliceSpace = 2f
             dataSet.valueFormatter = object : ValueFormatter() {
@@ -95,9 +95,11 @@ fun PieConsumptionChart(
                         this.isDrawHoleEnabled = true
                         this.holeRadius = 40f
                         this.transparentCircleRadius = 10f
+                        this.transparentCircleRadius = 45f
+                        this.setTransparentCircleColor(Color.White.toArgb())
+                        this.setTransparentCircleAlpha(110)
                         this.legend.isEnabled = false
                         this.description.isEnabled = false
-
                     }
                 },
                 modifier = Modifier.fillMaxSize().then(modifier)
