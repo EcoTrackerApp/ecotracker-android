@@ -2,11 +2,13 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.github.mikephil.charting.charts.PieChart
 import com.github.mikephil.charting.data.PieData
@@ -20,6 +22,7 @@ import org.koin.compose.KoinApplication
 import org.koin.compose.koinInject
 import com.github.mikephil.charting.formatter.ValueFormatter
 import kotlin.math.roundToInt
+
 
 @Composable
 fun PieConsumptionChart(
@@ -37,6 +40,13 @@ fun PieConsumptionChart(
             .padding(16.dp)
     ) {
         Column {
+            Text(
+                text = "Consommation",
+                modifier = Modifier
+                    .align(Alignment.Start)
+                    .padding(20.dp, top = 25.dp),
+                fontSize = 20.sp
+            )
 
             val monthConsumptionPerApp = pkgNetStatService.cache.appNetStats.map { (day, perApp) ->
                 day to perApp.map { (app, data) -> app to Bytes(data.total.value) }.toMap()
@@ -85,8 +95,9 @@ fun PieConsumptionChart(
                         this.isDrawHoleEnabled = true
                         this.holeRadius = 40f
                         this.transparentCircleRadius = 10f
-                        this.legend.isEnabled = true
+                        this.legend.isEnabled = false
                         this.description.isEnabled = false
+
                     }
                 },
                 modifier = Modifier.fillMaxSize().then(modifier)
