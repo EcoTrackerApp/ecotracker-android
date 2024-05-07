@@ -3,6 +3,7 @@ package fr.umontpellier.ecotracker.ui.component
 import android.content.Context
 import android.view.ViewGroup
 import android.widget.ImageView
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -67,7 +68,7 @@ fun AppColumn(
                 color = Color.White,
                 shadowElevation = 2.dp
             ) {
-                    AppButton(uid = uid, consumption = Bytes(totalBytes) , buttonSize = buttonSize)
+                AppButton(uid = uid, consumption = Bytes(totalBytes), buttonSize = buttonSize)
             }
         }
     }
@@ -79,14 +80,14 @@ fun AppColumn(
 fun AppButton(
     uid: Int,
     consumption: Bytes,
-    config: EcoTrackerConfig = koinInject()
+    config: EcoTrackerConfig = koinInject(),
     packageService: PackageService = koinInject(),
     buttonSize: Int = 50,
 ) {
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     val pageState = LocalPagerState.current
-    val defaultDrawable = ContextCompat.getDrawable(context, R.drawable.application_icon_default)
+    val defaultDrawable = ContextCompat.getDrawable(context, R.drawable.android_icon)
     val appDrawable = packageService.appIcon(uid) ?: defaultDrawable
 
     Row(
@@ -96,7 +97,7 @@ fun AppButton(
             .clickable(onClick = {
                 scope.launch {
                     config.currentApp = uid
-                    pageState.animateScrollToPage(2)
+                    pageState.animateScrollToPage(3)
                 }
             }),
         verticalAlignment = Alignment.CenterVertically,

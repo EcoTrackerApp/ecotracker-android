@@ -45,7 +45,7 @@ fun EcoTrackerLayout(
     pkgNetStartService: PkgNetStatService = koinInject(),
     content: @Composable (page: Int) -> Unit = {},
 ) {
-    val pageState = rememberPagerState(pageCount = { 3 })
+    val pageState = rememberPagerState(pageCount = { 4 })
     var isLoading by remember { mutableStateOf(pkgNetStartService.cacheJob.isActive) }
 
     LaunchedEffect(pkgNetStartService.cacheJob) {
@@ -69,6 +69,8 @@ fun EcoTrackerLayout(
                 BottomBarIndicator(pageState, id = 0)
                 BottomBarIndicator(pageState, id = 1)
                 BottomBarIndicator(pageState, id = 2)
+                BottomBarIndicator(pageState, id = 3)
+
             }
         }, containerColor = Color.Transparent, modifier = Modifier.height(40.dp))
     }) {
