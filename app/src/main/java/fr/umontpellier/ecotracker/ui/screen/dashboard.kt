@@ -2,9 +2,13 @@ package fr.umontpellier.ecotracker.ui.screen
 
 import android.util.Log
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush.Companion.horizontalGradient
@@ -23,6 +27,7 @@ import fr.umontpellier.ecotracker.ecoTrackerPreviewModule
 import fr.umontpellier.ecotracker.service.model.ModelService
 import fr.umontpellier.ecotracker.service.netstat.PkgNetStatService
 import fr.umontpellier.ecotracker.ui.component.Alert
+import fr.umontpellier.ecotracker.ui.dialog.ChangeDateDialog
 import fr.umontpellier.ecotracker.ui.util.dateFormatter
 import org.koin.compose.KoinApplication
 import org.koin.compose.koinInject
@@ -79,6 +84,7 @@ fun Header(
     pkgNetStatService: PkgNetStatService = koinInject(),
     modelService: ModelService = koinInject()
 ) {
+    var showDialog by remember { mutableStateOf(false) }
     Column(verticalArrangement = Arrangement.spacedBy((-60).dp)) {
         Image(
             painterResource(R.drawable.header),
@@ -106,14 +112,16 @@ fun Header(
                     fontSize = 24.sp
                 )
             }
-            Column {
+            Column(modifier = Modifier
+                .padding(top = 6.dp)
+                .clickable { showDialog = true }) {
                 Text(
                     text = "du ${dateFormatter.format(pkgNetStatService.cache.start)}",
                     color = Color.White,
                     fontWeight = FontWeight.ExtraBold,
                     textAlign = TextAlign.Right,
                     modifier = Modifier.fillMaxWidth(),
-                    fontSize = 24.sp
+                    fontSize = 14.sp
                 )
                 Text(
                     text = "au ${dateFormatter.format(pkgNetStatService.cache.end)}",
@@ -121,11 +129,21 @@ fun Header(
                     fontWeight = FontWeight.ExtraBold,
                     textAlign = TextAlign.Right,
                     modifier = Modifier.fillMaxWidth(),
-                    fontSize = 24.sp
+                    fontSize = 14.sp
                 )
+                Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = "Edit",
+                        tint = Color.White,
+                        modifier = Modifier
+                            .width(14.dp)
+                    )
+                }
             }
         }
     }
+    ChangeDateDialog(showDialog = showDialog) { showDialog = false }
 }
 
 @Composable
