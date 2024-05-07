@@ -6,6 +6,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -15,6 +17,7 @@ import androidx.compose.ui.graphics.Brush.Companion.horizontalGradient
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -37,6 +40,8 @@ fun Dashboard(
     pkgNetStatService: PkgNetStatService = koinInject(),
     modelService: ModelService = koinInject(),
 ) {
+    var pageIndex by remember { mutableStateOf(0) }
+
     Log.i("ecotracker", pkgNetStatService.cache.toString())
     Column(verticalArrangement = Arrangement.spacedBy(24.dp), modifier = Modifier.padding(bottom = 32.dp)) {
         Header()
@@ -66,6 +71,7 @@ fun Dashboard(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.fillMaxWidth()
         ) {
+
             Text(
                 text = "Concrètement, qu'est-ce que ça veut dire?",
                 fontSize = 18.sp,
@@ -73,8 +79,44 @@ fun Dashboard(
                 modifier = Modifier.padding(horizontal = 8.dp),
                 letterSpacing = (-0.5).sp
             )
-            Equivalent(image = R.drawable.car, text = "C'est ${modelService.total.carKm} en voiture...")
-            Equivalent(image = R.drawable.train, text = "ou bien ${modelService.total.tgvKm} en train")
+            Row(
+            ) {
+                Button(
+                    onClick = { pageIndex = (pageIndex - 1).coerceAtLeast(0) },
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.Transparent,
+                        contentColor = Color.DarkGray )
+                ) { Text("<", style = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Bold))  }
+
+                Box() {
+                    when (pageIndex) {
+                        0 -> Equivalent(image = R.drawable.car, text = "C'est ${modelService.total.carKm} en voiture")
+                        1 -> Equivalent(image = R.drawable.train, text = "ou ${modelService.total.tgvKm} en train")
+                        2 -> Equivalent(image = R.drawable.plane, text = "ou  ${modelService.total.planeMeter} en avion")
+
+                    }
+                }
+
+                Button(
+                    onClick = { pageIndex = (pageIndex + 1).coerceAtMost(2) },
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.Transparent,
+                        contentColor = Color.DarkGray )
+
+                ) { Text(">", style = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Bold))  }
+            }
+
+            Equivalent(
+                image = R.drawable.tree,
+                text = "Il faut ${
+                    modelService.total.tooTreeEquivalent(
+                        pkgNetStatService.cache.start,
+                        pkgNetStatService.cache.end
+                    )
+                } arbres pour absorber votre consommation",
+            )
         }
     }
 }
@@ -85,6 +127,7 @@ fun Header(
     modelService: ModelService = koinInject()
 ) {
     var showDialog by remember { mutableStateOf(false) }
+
     Column(verticalArrangement = Arrangement.spacedBy((-60).dp)) {
         Image(
             painterResource(R.drawable.header),

@@ -1,5 +1,7 @@
 package fr.umontpellier.ecotracker.service.model.unit
 
+import java.time.Duration
+import java.time.Instant
 import kotlin.math.abs
 import kotlin.math.log
 import kotlin.math.pow
@@ -10,6 +12,9 @@ private const val CO2_PER_TGV_KM =
     2.4 // https://greenly.earth/fr-fr/blog/actualites-ecologie/empreinte-carbone-comparatif-transports
 private const val CO2_PER_PLANE_KM =
     225 //  https://greenly.earth/fr-fr/blog/actualites-ecologie/empreinte-carbone-comparatif-transports
+
+private const val C02_ABSORBED_YEARLY_BY_TREE =
+    25000 // https://ecotree.green/combien-de-co2-absorbe-un-arbre#:~:text=est%20plus%20importante.-,Un%20arbre%20absorbe%20environ%2025%20kg%20de%20CO2%20par,par%20arbre%20et%20par%20an.
 
 @JvmInline
 value class CO2(val value: Double) {
@@ -22,6 +27,20 @@ value class CO2(val value: Double) {
 
     val planeMeter: Meter
         get() = Meter((value / CO2_PER_PLANE_KM) * 1000)
+
+
+    fun tooTreeEquivalent(start: Instant, end: Instant): String {
+        val capacity = TreeCapacityForGivenDuration(start, end)
+        val result = value / capacity
+        return String.format("%.1f", result)
+    }
+
+    fun TreeCapacityForGivenDuration(start: Instant, end: Instant): Double {
+        val durationInDays = Duration.between(start, end).toDays().toDouble()
+        val durationInYears = durationInDays / 365.25
+        return C02_ABSORBED_YEARLY_BY_TREE * durationInYears
+    }
+
 
     override fun toString(): String {
         val absBytes = abs(value)
