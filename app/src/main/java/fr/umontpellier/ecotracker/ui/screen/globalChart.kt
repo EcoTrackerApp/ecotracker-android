@@ -13,44 +13,54 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import fr.umontpellier.ecotracker.ecoTrackerPreviewModule
-import fr.umontpellier.ecotracker.ui.chart.PieConsumptionChart
+import fr.umontpellier.ecotracker.ui.chart.BarConsumptionChart
 import fr.umontpellier.ecotracker.ui.component.AppColumn
 import org.koin.compose.KoinApplication
 
 @Composable
-fun DetailsScreen() {
+fun GlobalChart() {
+    val lightBlue = Color(48, 114, 255)
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Green.copy(alpha = .45f))
+            .background(lightBlue)
     ) {
-        Text(
-            "Applications",
-            fontSize = 25.sp,
-            fontWeight = FontWeight.ExtraBold,
-            letterSpacing = (-0.5).sp,
-            color = Color.White,
-            modifier = Modifier.padding(top = 10.dp, start = 16.dp)
-        )
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+        ) {
+            Text(
+                "Graphes",
+                fontSize = 25.sp,
+                fontWeight = FontWeight.ExtraBold,
+                letterSpacing = (-0.5).sp,
+                color = Color.White
+            )
+        }
+
         Surface(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(2f)
-                .padding(16.dp),
+                .padding(horizontal = 12.dp, vertical = 2.dp),
             shape = RoundedCornerShape(10.dp),
-            //shadowElevation = 4.dp,  // Utilisation de shadowElevation pour l'effet d'élévation
+            shadowElevation = 4.dp,  // Utilisation de shadowElevation pour l'effet d'élévation
             color = Color.White
         ) {
-            PieConsumptionChart()
+            BarConsumptionChart()
         }
-        Spacer(modifier = Modifier.height(6.dp))
+
+        Spacer(modifier = Modifier.height(12.dp))
+
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp),
         ) {
             Text(
-                "Toutes les applications: ",
+                "Classement ",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 letterSpacing = (-0.5).sp,
@@ -65,16 +75,15 @@ fun DetailsScreen() {
                 .fillMaxWidth()
                 .weight(1f)
         ) {
-            AppColumn(limit = Int.MAX_VALUE)
+            AppColumn(applimit = 3)
         }
     }
 }
 
-
 @Preview
 @Composable
-fun DetailsPreview() {
+fun ChartApplist() {
     KoinApplication(application = { modules(ecoTrackerPreviewModule) }) {
-        DetailsScreen()
+        GlobalChart()
     }
 }

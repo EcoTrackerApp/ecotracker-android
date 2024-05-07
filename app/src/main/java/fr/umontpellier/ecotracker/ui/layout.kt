@@ -70,6 +70,7 @@ fun EcoTrackerLayout(
                 BottomBarIndicator(pageState, id = 1)
                 BottomBarIndicator(pageState, id = 2)
                 BottomBarIndicator(pageState, id = 3)
+
             }
         }, containerColor = Color.Transparent, modifier = Modifier.height(40.dp))
     }) {
