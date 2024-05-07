@@ -1,17 +1,19 @@
 package fr.umontpellier.ecotracker.ui.chart
 
 import android.graphics.Color.parseColor
-import androidx.compose.foundation.layout.*
+import android.view.MotionEvent
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.components.XAxis
@@ -19,6 +21,8 @@ import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.formatter.ValueFormatter
+import com.github.mikephil.charting.listener.ChartTouchListener
+import com.github.mikephil.charting.listener.OnChartGestureListener
 import fr.umontpellier.ecotracker.ecoTrackerPreviewModule
 import fr.umontpellier.ecotracker.service.model.unit.Bytes
 import fr.umontpellier.ecotracker.service.netstat.PkgNetStatService
@@ -57,25 +61,18 @@ fun LineConsumptionChart(
             .aspectRatio(0.7f)
             .padding(16.dp)
     ) {
-        Column {
-            Text(
-                text = "Consommation",
-                modifier = Modifier
-                    .align(Alignment.Start)
-                    .padding(20.dp, top = 25.dp, bottom = 25.dp),
-                fontSize = 20.sp
-            )
-        }
         AndroidView(
             factory = { context ->
                 LineChart(context).apply {
                     // Préparation des données
                     val monthConsumptionSent = pkgNetStatService.cache.appNetStats.map { (day, perApp) ->
-                        day to Bytes(perApp.filter { (app, _) -> app == appId }.map { (_, data) -> data.sent.value }.sum())
+                        day to Bytes(perApp.filter { (app, _) -> app == appId }.map { (_, data) -> data.sent.value }
+                            .sum())
                     }.toMap()
 
                     val monthConsumptionReceived = pkgNetStatService.cache.appNetStats.map { (day, perApp) ->
-                        day to Bytes(perApp.filter { (app, _) -> app == appId }.map { (_, data) -> data.received.value }.sum())
+                        day to Bytes(perApp.filter { (app, _) -> app == appId }.map { (_, data) -> data.received.value }
+                            .sum())
                     }.toMap()
 
                     val entriesSent = monthConsumptionSent.entries.mapIndexed { index, (day, bytesList) ->
@@ -90,11 +87,24 @@ fun LineConsumptionChart(
                         color = parseColor("#fcae60")
                         setDrawValues(false)
                         lineWidth = 6f
+                        valueTextSize = 12f // Augmenter la taille du texte
+                        valueFormatter = object : ValueFormatter() {
+                            override fun getFormattedValue(value: Float): String {
+                                return scaleValue(value)
+                            }
+                        }
                     }
+
                     val dataSetReceived = LineDataSet(entriesReceived, "Reçu").apply {
                         color = parseColor("#2a7bb5")
                         setDrawValues(false)
                         lineWidth = 6f
+                        valueTextSize = 12f // Augmenter la taille du texte
+                        valueFormatter = object : ValueFormatter() {
+                            override fun getFormattedValue(value: Float): String {
+                                return scaleValue(value)
+                            }
+                        }
                     }
 
                     val lineData = LineData(dataSetSent, dataSetReceived)
@@ -108,10 +118,11 @@ fun LineConsumptionChart(
                     setScaleEnabled(false)
                     setPinchZoom(false)
                     isDragEnabled = false
-                    animateX(1000)
 
                     // Configuration de l'axe X
                     this.axisRight.isEnabled = false
+                    axisLeft.axisMinimum = 0f
+                    animateX(1000)
 
                     this.xAxis.isEnabled = true
                     this.xAxis.position = XAxis.XAxisPosition.BOTTOM
@@ -133,6 +144,26 @@ fun LineConsumptionChart(
                         }
                     }
 
+                    // Ajouter un OnChartGestureListener
+                    var showValues = false
+                    this.setOnChartGestureListener(object : OnChartGestureListener {
+                        override fun onChartSingleTapped(me: MotionEvent?) {
+                            showValues = !showValues
+                            dataSetSent.setDrawValues(showValues)
+                            dataSetReceived.setDrawValues(showValues)
+                            invalidate()
+                        }
+
+                        // Implémenter les autres méthodes avec un corps vide
+                        override fun onChartGestureStart(me: MotionEvent?, lastPerformedGesture: ChartTouchListener.ChartGesture?) {}
+                        override fun onChartGestureEnd(me: MotionEvent?, lastPerformedGesture: ChartTouchListener.ChartGesture?) {}
+                        override fun onChartLongPressed(me: MotionEvent?) {}
+                        override fun onChartDoubleTapped(me: MotionEvent?) {}
+                        override fun onChartFling(me1: MotionEvent?, me2: MotionEvent?, velocityX: Float, velocityY: Float) {}
+                        override fun onChartScale(me: MotionEvent?, scaleX: Float, scaleY: Float) {}
+                        override fun onChartTranslate(me: MotionEvent?, dX: Float, dY: Float) {}
+                    })
+
                 }
             },
             modifier = Modifier.fillMaxSize()
@@ -142,7 +173,7 @@ fun LineConsumptionChart(
 
 @Preview
 @Composable
-fun PieChartPreview() {
+fun LineChartPreview() {
     KoinApplication(application = { modules(ecoTrackerPreviewModule) }) {
         LineConsumptionChart(1)
     }
