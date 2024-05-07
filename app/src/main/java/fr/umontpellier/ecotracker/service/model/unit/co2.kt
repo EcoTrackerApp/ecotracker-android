@@ -15,13 +15,13 @@ private const val CO2_PER_PLANE_KM =
 value class CO2(val value: Double) {
 
     val carKm: Meter
-        get() = Meter(value / CO2_PER_CAR_KM)
+        get() = Meter((value / CO2_PER_CAR_KM) * 1000)
 
     val tgvKm: Meter
-        get() = Meter(value / CO2_PER_TGV_KM)
+        get() = Meter((value / CO2_PER_TGV_KM) * 1000)
 
     val planeMeter: Meter
-        get() = Meter(value / CO2_PER_PLANE_KM)
+        get() = Meter((value / CO2_PER_PLANE_KM) * 1000)
 
     override fun toString(): String {
         val absBytes = abs(value)

@@ -1,6 +1,8 @@
 package fr.umontpellier.ecotracker.ui
 
 import android.annotation.SuppressLint
+import android.content.Context
+import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -17,10 +19,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.LifecycleOwner
 import fr.umontpellier.ecotracker.service.EcoTrackerConfig
 import fr.umontpellier.ecotracker.service.netstat.PkgNetStatService
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import org.koin.compose.koinInject
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -35,15 +43,13 @@ val LocalPagerState = staticCompositionLocalOf<PagerState> {
 fun EcoTrackerLayout(
     config: EcoTrackerConfig = koinInject(),
     pkgNetStartService: PkgNetStatService = koinInject(),
-    content: @Composable (page: Int) -> Unit = {}
+    content: @Composable (page: Int) -> Unit = {},
 ) {
-    val pageState = rememberPagerState(pageCount = { 3 })
+    val pageState = rememberPagerState(pageCount = { 4 })
     var isLoading by remember { mutableStateOf(pkgNetStartService.cacheJob.isActive) }
 
     LaunchedEffect(pkgNetStartService.cacheJob) {
         pkgNetStartService.cacheJob.invokeOnCompletion {
-            // Log the completion status
-            println("Job completed: ${pkgNetStartService.cacheJob.isCompleted}")
             // Refresh UI when job completes
             isLoading = false
         }
@@ -63,6 +69,7 @@ fun EcoTrackerLayout(
                 BottomBarIndicator(pageState, id = 0)
                 BottomBarIndicator(pageState, id = 1)
                 BottomBarIndicator(pageState, id = 2)
+                BottomBarIndicator(pageState, id = 3)
             }
         }, containerColor = Color.Transparent, modifier = Modifier.height(40.dp))
     }) {
@@ -99,4 +106,50 @@ fun BottomBarIndicator(state: PagerState, id: Int) {
             .height(10.dp)
             .background(Color.Black.copy(alpha = if (state.currentPage == id) 1F else 0.1F))
     )
+}
+
+@Composable
+fun EcoTrackerConfigSaver(
+    context: Context = koinInject(),
+    config: EcoTrackerConfig = koinInject(),
+    lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current
+) {
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_CREATE) {
+                try {
+                    val text = context.openFileInput("config.json")?.bufferedReader()?.run {
+                        val t = this.readText()
+                        this.close()
+                        t
+                    }
+                    Log.i("ecotracker", "Reading config $text")
+                    val fileConfig =
+                        if (text == null) EcoTrackerConfig() else Json.decodeFromString<EcoTrackerConfig>(text)
+                    config.dates = fileConfig.dates
+                    config.precision = fileConfig.precision
+                    config.model = fileConfig.model
+                    config.apps.putAll(fileConfig.apps)
+                } catch (e: Exception) {
+                    Log.e("ecotracker", "Failed to read config $e")
+                    e.printStackTrace()
+                }
+                return@LifecycleEventObserver
+            }
+
+            if (event !in listOf(Lifecycle.Event.ON_PAUSE, Lifecycle.Event.ON_STOP))
+                return@LifecycleEventObserver
+
+            val json = Json.encodeToString(config)
+            context.openFileOutput("config.json", Context.MODE_PRIVATE)?.bufferedWriter()?.apply {
+                write(json)
+                close()
+            }
+            Log.i("ecotracker", "Config written:\n$json")
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
 }

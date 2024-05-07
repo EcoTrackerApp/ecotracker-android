@@ -1,7 +1,5 @@
 package fr.umontpellier.ecotracker.ui.screen
 
-import android.content.Context
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -15,30 +13,25 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import fr.umontpellier.ecotracker.ecoTrackerPreviewModule
-import fr.umontpellier.ecotracker.ui.chart.BarConsumptionChart
+import fr.umontpellier.ecotracker.ui.chart.PieConsumptionChart
 import fr.umontpellier.ecotracker.ui.component.AppColumn
 import org.koin.compose.KoinApplication
 
 @Composable
-fun Apps() {
+fun DetailsScreen() {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Blue.copy(alpha = 0.5f))
+            .background(Color.Green.copy(alpha = .45f))
     ) {
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-        ) {
-            Text("Graphes",
-                fontSize = 25.sp,
-                fontWeight = FontWeight.ExtraBold,
-                letterSpacing = (-0.5).sp,
-                color = Color.White,
-                modifier = Modifier.padding(top = 10.dp, start = 16.dp))
-        }
-
+        Text(
+            "Applications",
+            fontSize = 25.sp,
+            fontWeight = FontWeight.ExtraBold,
+            letterSpacing = (-0.5).sp,
+            color = Color.White,
+            modifier = Modifier.padding(top = 10.dp, start = 16.dp)
+        )
         Surface(
             modifier = Modifier
                 .fillMaxWidth()
@@ -48,21 +41,21 @@ fun Apps() {
             //shadowElevation = 4.dp,  // Utilisation de shadowElevation pour l'effet d'élévation
             color = Color.White
         ) {
-            BarConsumptionChart()
+            PieConsumptionChart()
         }
-
         Spacer(modifier = Modifier.height(6.dp))
-
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp),
         ) {
-            Text("Classement: ",
+            Text(
+                "Toutes les applications: ",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 letterSpacing = (-0.5).sp,
-                color = Color.White)
+                color = Color.White
+            )
         }
 
         Spacer(modifier = Modifier.height(4.dp))
@@ -72,15 +65,16 @@ fun Apps() {
                 .fillMaxWidth()
                 .weight(1f)
         ) {
-            AppColumn()
+            AppColumn(limit = Int.MAX_VALUE)
         }
     }
 }
 
+
 @Preview
 @Composable
-fun ChartApplist() {
+fun DetailsPreview() {
     KoinApplication(application = { modules(ecoTrackerPreviewModule) }) {
-        Apps()
+        DetailsScreen()
     }
 }
