@@ -1,18 +1,16 @@
-import android.content.pm.PackageManager
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import android.graphics.Color.parseColor
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.saveable.SaveableStateRegistry
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.github.mikephil.charting.charts.PieChart
 import com.github.mikephil.charting.data.Entry
@@ -29,7 +27,6 @@ import fr.umontpellier.ecotracker.service.model.unit.Bytes
 import fr.umontpellier.ecotracker.service.netstat.PkgNetStatService
 import org.koin.compose.KoinApplication
 import org.koin.compose.koinInject
-import java.util.stream.Collectors.toList
 import kotlin.math.abs
 import kotlin.math.log
 import kotlin.math.pow
@@ -40,6 +37,7 @@ import kotlin.math.roundToInt
 fun PieConsumptionChart(
     modifier: Modifier = Modifier,
     pkgNetStatService: PkgNetStatService = koinInject(),
+    packageService: PackageService = koinInject(),
     applimit: Int = 10
 ) {
     // Modifier la fonction scaleValue pour arrondir les bytes à l'unité

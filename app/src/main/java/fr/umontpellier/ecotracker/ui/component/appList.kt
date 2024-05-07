@@ -3,7 +3,7 @@ package fr.umontpellier.ecotracker.ui.component
 import android.content.Context
 import android.view.ViewGroup
 import android.widget.ImageView
-import androidx.compose.foundation.Image
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -11,13 +11,12 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -67,19 +66,19 @@ fun AppColumn(
                 color = Color.White,
                 shadowElevation = 2.dp
             ) {
-                    AppButton(uid = uid, consumption = Bytes(totalBytes) , buttonSize = buttonSize)
+                AppButton(uid = uid, consumption = Bytes(totalBytes), buttonSize = buttonSize)
             }
         }
     }
 }
 
-fun String.truncate (length: Int): String {
+fun String.truncate(length: Int): String {
     return if (this.length > length) {
         this.substring(0, length) + "..."
     } else {
         this
     }
- }
+}
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -92,6 +91,7 @@ fun AppButton(
 ) {
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
+    val pageState = LocalPagerState.current
     val defaultDrawable = ContextCompat.getDrawable(context, R.drawable.android_icon)
     val appDrawable = packageService.appIcon(uid) ?: defaultDrawable
 
@@ -102,7 +102,7 @@ fun AppButton(
             .clickable(onClick = {
                 scope.launch {
                     config.currentApp = uid
-                    pageState.animateScrollToPage(2)
+                    pageState.animateScrollToPage(3)
                 }
             }),
         verticalAlignment = Alignment.CenterVertically,

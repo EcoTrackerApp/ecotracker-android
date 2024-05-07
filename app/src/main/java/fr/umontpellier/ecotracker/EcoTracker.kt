@@ -1,6 +1,5 @@
 package fr.umontpellier.ecotracker
 
-import PieConsumptionChart
 import android.annotation.SuppressLint
 import android.app.Application
 import android.os.Bundle
@@ -19,9 +18,9 @@ import fr.umontpellier.ecotracker.service.netstat.PkgNetStatService
 import fr.umontpellier.ecotracker.ui.EcoTrackerConfigSaver
 import fr.umontpellier.ecotracker.ui.EcoTrackerLayout
 import fr.umontpellier.ecotracker.ui.dialog.UsageAccessDialog
+import fr.umontpellier.ecotracker.ui.screen.AppPage
 import fr.umontpellier.ecotracker.ui.screen.Apps
 import fr.umontpellier.ecotracker.ui.screen.Dashboard
-import fr.umontpellier.ecotracker.ui.screen.Detail
 import fr.umontpellier.ecotracker.ui.screen.GlobalChart
 import org.koin.android.ext.android.inject
 import org.koin.android.ext.koin.androidContext
@@ -99,7 +98,7 @@ class EcoTrackerActivity : ComponentActivity() {
                         0 -> Dashboard()
                         1 -> GlobalChart()
                         2 -> Apps()
-                        3 -> Detail()
+                        3 -> AppPage()
                     }
                 }
             }
