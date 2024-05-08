@@ -54,7 +54,7 @@ interface PkgNetStatService {
          */
         val total: Bytes
             get() = Bytes(
-                appNetStats.map { (key, value) ->
+                appNetStats.map { (_, value) ->
                     value.map { it.value.total.value }
                         .sum()
                 }.sum()
@@ -65,7 +65,7 @@ interface PkgNetStatService {
          */
         val received: Bytes
             get() = Bytes(
-                appNetStats.map { (key, value) ->
+                appNetStats.map { (_, value) ->
                     value.map { it.value.received.value }
                         .sum()
                 }.sum()
@@ -76,15 +76,26 @@ interface PkgNetStatService {
          */
         val sent: Bytes
             get() = Bytes(
-                appNetStats.map { (key, value) ->
+                appNetStats.map { (_, value) ->
                     value.map { it.value.sent.value }
                         .sum()
                 }.sum()
             )
 
-        data class App(val type: ConnectionType, val received: Bytes, val sent: Bytes) {
+        data class App(val data: MutableList<Connection> = mutableListOf()) {
+            data class Connection(val connection: ConnectionType, val received: Bytes, val sent: Bytes) {
+                val total: Bytes
+                    get() = received + sent
+            }
+
+            val received: Bytes
+                get() = Bytes(data.sumOf { it.received.value })
+
+            val sent: Bytes
+                get() = Bytes(data.sumOf { it.sent.value })
+
             val total: Bytes
-                get() = Bytes(received.value + sent.value)
+                get() = received + sent
         }
     }
 }
@@ -97,16 +108,60 @@ class DummyPkgNetStatService : PkgNetStatService {
         get() = PkgNetStatService.Result(
             now().minus(3, ChronoUnit.DAYS), now(), Duration.ofDays(1), mapOf(
                 now().minus(3, ChronoUnit.DAYS) to mapOf(
-                    1 to PkgNetStatService.Result.App(ConnectionType.MOBILE, Bytes(200), Bytes(500)),
-                    2 to PkgNetStatService.Result.App(ConnectionType.MOBILE, Bytes(350), Bytes(400))
+                    1 to PkgNetStatService.Result.App(
+                        mutableListOf(
+                            PkgNetStatService.Result.App.Connection(
+                                ConnectionType.MOBILE,
+                                Bytes(200),
+                                Bytes(500)
+                            )
+                        )
+                    ),
+                    2 to PkgNetStatService.Result.App(
+                        mutableListOf(
+                            PkgNetStatService.Result.App.Connection(ConnectionType.MOBILE, Bytes(350), Bytes(400))
+                        )
+                    )
                 ),
                 now().minus(2, ChronoUnit.DAYS) to mapOf(
-                    1 to PkgNetStatService.Result.App(ConnectionType.MOBILE, Bytes(550), Bytes(600)),
-                    2 to PkgNetStatService.Result.App(ConnectionType.MOBILE, Bytes(650), Bytes(700))
+                    1 to PkgNetStatService.Result.App(
+                        mutableListOf(
+                            PkgNetStatService.Result.App.Connection(
+                                ConnectionType.MOBILE,
+                                Bytes(550),
+                                Bytes(600)
+                            )
+                        )
+                    ),
+                    2 to PkgNetStatService.Result.App(
+                        mutableListOf(
+                            PkgNetStatService.Result.App.Connection(
+                                ConnectionType.MOBILE,
+                                Bytes(650),
+                                Bytes(700)
+                            )
+                        )
+                    )
                 ),
                 now().minus(1, ChronoUnit.DAYS) to mapOf(
-                    1 to PkgNetStatService.Result.App(ConnectionType.MOBILE, Bytes(750), Bytes(800)),
-                    2 to PkgNetStatService.Result.App(ConnectionType.MOBILE, Bytes(850), Bytes(900))
+                    1 to PkgNetStatService.Result.App(
+                        mutableListOf(
+                            PkgNetStatService.Result.App.Connection(
+                                ConnectionType.MOBILE,
+                                Bytes(750),
+                                Bytes(800)
+                            )
+                        )
+                    ),
+                    2 to PkgNetStatService.Result.App(
+                        mutableListOf(
+                            PkgNetStatService.Result.App.Connection(
+                                ConnectionType.MOBILE,
+                                Bytes(850),
+                                Bytes(900)
+                            )
+                        )
+                    )
                 )
             )
         )
@@ -205,13 +260,15 @@ class AndroidNetStartService(private val context: Context, private val config: E
                     val bucket = NetworkStats.Bucket()
                     query.getNextBucket(bucket)
 
-                    val sent = results[bucket.uid]?.sent ?: Bytes(0L)
-                    val received = results[bucket.uid]?.received ?: Bytes(0L)
-                    results[bucket.uid] = PkgNetStatService.Result.App(
-                        connection,
-                        Bytes(received.value + bucket.rxBytes),
-                        Bytes(sent.value + bucket.txBytes)
-                    )
+                    results.getOrPut(bucket.uid) { PkgNetStatService.Result.App() }
+                        .data
+                        .add(
+                            PkgNetStatService.Result.App.Connection(
+                                connection,
+                                Bytes(bucket.rxBytes),
+                                Bytes(bucket.txBytes)
+                            )
+                        )
                 }
                 r[s] = results
                 s = e

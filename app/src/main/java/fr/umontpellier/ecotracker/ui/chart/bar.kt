@@ -27,6 +27,7 @@ import com.github.mikephil.charting.highlight.Highlight
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener
 import fr.umontpellier.ecotracker.ecoTrackerPreviewModule
 import fr.umontpellier.ecotracker.service.model.unit.Bytes
+import fr.umontpellier.ecotracker.service.netstat.ConnectionType
 import fr.umontpellier.ecotracker.service.netstat.PkgNetStatService
 import org.koin.compose.KoinApplication
 import org.koin.compose.koinInject
@@ -64,28 +65,69 @@ fun BarConsumptionChart(
             factory = { context ->
                 BarChart(context).apply {
                     // Get the data sent from the cache in Bytes
-                    val monthConsumptionSent = pkgNetStatService.cache.appNetStats.map { (day, perApp) ->
-                        day to Bytes(perApp.map { (_, data) -> data.sent.value }.sum())
-                    }.toMap()
+                    val sentOverWifi = pkgNetStatService.cache.appNetStats
+                        .map { (day, perApp) ->
+                            day to Bytes(perApp
+                                .flatMap { it.value.data }
+                                .filter { it.connection == ConnectionType.WIFI }
+                                .sumOf { data -> data.sent.value })
+                        }
+                        .toMap()
+                    val sentOverMobile = pkgNetStatService.cache.appNetStats
+                        .map { (day, perApp) ->
+                            day to Bytes(perApp
+                                .flatMap { it.value.data }
+                                .filter { it.connection == ConnectionType.MOBILE }
+                                .sumOf { data -> data.sent.value })
+                        }
+                        .toMap()
 
                     // Get the data received from the cache in Bytes
-                    val monthConsumptionReceived = pkgNetStatService.cache.appNetStats.map { (day, perApp) ->
-                        day to Bytes(perApp.map { (_, data) -> data.received.value }.sum())
-                    }.toMap()
+                    val receivedOverWifi = pkgNetStatService.cache.appNetStats
+                        .map { (day, perApp) ->
+                            day to Bytes(perApp
+                                .flatMap { it.value.data }
+                                .filter { it.connection == ConnectionType.WIFI }
+                                .sumOf { data -> data.received.value })
+                        }
+                        .toMap()
+                    val receivedOverMobile = pkgNetStatService.cache.appNetStats
+                        .map { (day, perApp) ->
+                            day to Bytes(perApp
+                                .flatMap { it.value.data }
+                                .filter { it.connection == ConnectionType.MOBILE }
+                                .sumOf { data -> data.received.value })
+                        }
+                        .toMap()
 
                     // Create the entries for the chart with sent and received data
-                    val entries = monthConsumptionSent.entries.mapIndexed { index, (day, bytesSent) ->
-                        val bytesReceived = monthConsumptionReceived[day]?.value ?: 0f
-                        BarEntry(index.toFloat(), floatArrayOf(bytesSent.value.toFloat(), bytesReceived.toFloat()))
+                    val entries = sentOverWifi.entries.mapIndexed { index, (day, bytesSent) ->
+                        val bytesReceivedWifi = receivedOverWifi[day]?.value ?: 0L
+                        val bytesSentMobile = sentOverMobile[day]?.value ?: 0L
+                        val bytesReceivedMobile = receivedOverMobile[day]?.value ?: 0L
+                        BarEntry(
+                            index.toFloat(),
+                            floatArrayOf(
+                                bytesSent.value.toFloat(),
+                                bytesReceivedWifi.toFloat(),
+                                bytesSentMobile.toFloat(),
+                                bytesReceivedMobile.toFloat()
+                            )
+                        )
                     }
 
                     // Create the data set for the chart
                     val dataSet = BarDataSet(entries, "").apply {
-                        colors = listOf(parseColor("#fcae60"), parseColor("#2a89b5"))
+                        colors = listOf(
+                            parseColor("#fcae60"),
+                            parseColor("#2a89b5"),
+                            parseColor("#dddd60"),
+                            parseColor("#2acf93")
+                        )
                         setDrawValues(false)
                         highLightAlpha = 0
                         // Set the labels for the legend
-                        setStackLabels(arrayOf("Reçu", "Envoyé"))
+                        stackLabels = arrayOf("Reçu Wifi", "Envoyé", "Reçu Mobile", "Envoyé")
 
                         // Set the corner radius for the bars
                         barShadowColor = Color.Black.toArgb()
@@ -103,7 +145,7 @@ fun BarConsumptionChart(
 
                             dataSet.valueFormatter = object : ValueFormatter() {
                                 override fun getFormattedValue(value: Float): String {
-                                    return scaleValue(value);
+                                    return scaleValue(value)
                                 }
                             }
 
@@ -135,7 +177,7 @@ fun BarConsumptionChart(
                     // Set the formatter for the x axis
                     xAxis.valueFormatter = object : ValueFormatter() {
                         override fun getFormattedValue(value: Float): String {
-                            val instant = monthConsumptionSent.keys.elementAtOrNull(value.toInt())
+                            val instant = sentOverWifi.keys.elementAtOrNull(value.toInt())
                             return if (instant != null) {
                                 val formatter = DateTimeFormatter.ofPattern("dd/MM")
                                 formatter.format(instant.atZone(ZoneId.systemDefault()))
@@ -162,7 +204,9 @@ fun BarConsumptionChart(
 
                 }
             },
-            modifier = Modifier.fillMaxSize().then(modifier)
+            modifier = Modifier
+                .fillMaxSize()
+                .then(modifier)
         )
     }
 }
