@@ -38,8 +38,8 @@ import org.koin.compose.koinInject
 
 @Composable
 fun AppColumn(
-    pkgNetStatService: PkgNetStatService = koinInject(),
     modifier: Modifier = Modifier,
+    pkgNetStatService: PkgNetStatService = koinInject(),
     applimit: Int = 10,
     buttonSize: Int = 50,
     spaceBtwnItems: Int = 4,
