@@ -2,6 +2,7 @@ package fr.umontpellier.ecotracker.service.model
 
 import fr.umontpellier.ecotracker.service.EcoTrackerConfig
 import fr.umontpellier.ecotracker.service.model.impl.OneByte
+import fr.umontpellier.ecotracker.service.model.impl.SustainableWebDesign
 import fr.umontpellier.ecotracker.service.model.unit.CO2
 import fr.umontpellier.ecotracker.service.netstat.PkgNetStatService
 import java.time.Instant
@@ -36,7 +37,8 @@ class AndroidModelService(
 ) : ModelService {
 
     private val models = mutableMapOf<String, Model>(
-        "1byte" to OneByte
+        "1byte" to OneByte,
+        "swd" to SustainableWebDesign
     )
 
     val model: Model

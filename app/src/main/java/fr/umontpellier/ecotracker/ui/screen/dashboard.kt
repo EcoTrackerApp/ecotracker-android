@@ -30,6 +30,7 @@ import fr.umontpellier.ecotracker.ecoTrackerPreviewModule
 import fr.umontpellier.ecotracker.service.model.ModelService
 import fr.umontpellier.ecotracker.service.netstat.PkgNetStatService
 import fr.umontpellier.ecotracker.ui.component.Alert
+import fr.umontpellier.ecotracker.ui.component.ModelButton
 import fr.umontpellier.ecotracker.ui.dialog.ChangeDateDialog
 import fr.umontpellier.ecotracker.ui.util.dateFormatter
 import org.koin.compose.KoinApplication
@@ -86,14 +87,18 @@ fun Dashboard(
                     modifier = Modifier.weight(1f),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color.Transparent,
-                        contentColor = Color.DarkGray )
-                ) { Text("<", style = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Bold))  }
+                        contentColor = Color.DarkGray
+                    )
+                ) { Text("<", style = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Bold)) }
 
                 Box() {
                     when (pageIndex) {
                         0 -> Equivalent(image = R.drawable.car, text = "C'est ${modelService.total.carKm} en voiture")
                         1 -> Equivalent(image = R.drawable.train, text = "ou ${modelService.total.tgvKm} en train")
-                        2 -> Equivalent(image = R.drawable.plane, text = "ou  ${modelService.total.planeMeter} en avion")
+                        2 -> Equivalent(
+                            image = R.drawable.plane,
+                            text = "ou  ${modelService.total.planeMeter} en avion"
+                        )
 
                     }
                 }
@@ -103,9 +108,10 @@ fun Dashboard(
                     modifier = Modifier.weight(1f),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color.Transparent,
-                        contentColor = Color.DarkGray )
+                        contentColor = Color.DarkGray
+                    )
 
-                ) { Text(">", style = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Bold))  }
+                ) { Text(">", style = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Bold)) }
             }
 
             Equivalent(
@@ -158,6 +164,7 @@ fun Header(
             Column(modifier = Modifier
                 .padding(top = 6.dp)
                 .clickable { showDialog = true }) {
+
                 Text(
                     text = "du ${dateFormatter.format(pkgNetStatService.cache.start)}",
                     color = Color.White,
@@ -182,6 +189,9 @@ fun Header(
                         modifier = Modifier
                             .width(14.dp)
                     )
+                }
+                Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
+                  ModelButton()
                 }
             }
         }
