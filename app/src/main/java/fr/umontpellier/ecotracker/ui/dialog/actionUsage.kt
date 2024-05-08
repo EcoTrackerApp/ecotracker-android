@@ -5,21 +5,27 @@ import android.content.Intent
 import android.os.Process
 import android.provider.Settings
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.ManagedActivityResultLauncher
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import fr.umontpellier.ecotracker.R
+import fr.umontpellier.ecotracker.service.netstat.PkgNetStatService
+import org.koin.compose.koinInject
 
-fun ComponentActivity.openUsageAccessSettings() {
+fun ManagedActivityResultLauncher<Intent, ActivityResult>.openUsageAccessSettings() {
     val intent = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)
-    startActivity(intent)
+    this.launch(intent)
 }
 
 val ComponentActivity.hasUsageAccess: Boolean
@@ -34,8 +40,18 @@ val ComponentActivity.hasUsageAccess: Boolean
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ComponentActivity.UsageAccessDialog(content: @Composable () -> Unit) {
-    if (!hasUsageAccess) {
+fun ComponentActivity.UsageAccessDialog(
+    pkgNetStatService: PkgNetStatService = koinInject(),
+    content: @Composable () -> Unit
+) {
+    var hasUsageAccessState by remember { mutableStateOf(hasUsageAccess) }
+    val requestPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { _ ->
+        hasUsageAccessState = hasUsageAccess
+        pkgNetStatService.fetchAndCache()
+    }
+    if (!hasUsageAccessState) {
         BasicAlertDialog(
             onDismissRequest = { finishAffinity() }
         ) {
@@ -79,7 +95,7 @@ fun ComponentActivity.UsageAccessDialog(content: @Composable () -> Unit) {
                             Text("Non!")
                         }
                         TextButton(
-                            onClick = { openUsageAccessSettings() },
+                            onClick = { requestPermissionLauncher.openUsageAccessSettings() },
                             modifier = Modifier.padding(8.dp),
                         ) {
                             Text("Ouvrir le menu")

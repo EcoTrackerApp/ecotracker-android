@@ -57,7 +57,7 @@ fun BarConsumptionChart(
         colors = CardDefaults.cardColors(Color.White),
         modifier = Modifier
             .fillMaxWidth()
-            .aspectRatio(0.7f)
+            .aspectRatio(0.75f)
             .padding(16.dp)
     ) {
         AndroidView(
@@ -119,7 +119,6 @@ fun BarConsumptionChart(
                         }
                     }
                     setOnChartValueSelectedListener(chartClickListener)
-
                     // chart configuration
                     legend.isEnabled = true // Enable the legend
                     legend.textSize = 15f // Set the text size for the legend
@@ -138,7 +137,7 @@ fun BarConsumptionChart(
                         override fun getFormattedValue(value: Float): String {
                             val instant = monthConsumptionSent.keys.elementAtOrNull(value.toInt())
                             return if (instant != null) {
-                                val formatter = DateTimeFormatter.ofPattern("dd")
+                                val formatter = DateTimeFormatter.ofPattern("dd/MM")
                                 formatter.format(instant.atZone(ZoneId.systemDefault()))
                             } else {
                                 ""

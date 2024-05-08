@@ -3,6 +3,7 @@ package fr.umontpellier.ecotracker.ui.component
 import android.content.Context
 import android.view.ViewGroup
 import android.widget.ImageView
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -11,7 +12,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -26,9 +28,11 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import fr.umontpellier.ecotracker.R
 import fr.umontpellier.ecotracker.ecoTrackerPreviewModule
+import fr.umontpellier.ecotracker.service.EcoTrackerConfig
 import fr.umontpellier.ecotracker.service.PackageService
 import fr.umontpellier.ecotracker.service.model.unit.Bytes
 import fr.umontpellier.ecotracker.service.netstat.PkgNetStatService
+import fr.umontpellier.ecotracker.ui.LocalPagerState
 import kotlinx.coroutines.launch
 import org.koin.compose.KoinApplication
 import org.koin.compose.koinInject
@@ -38,7 +42,9 @@ import org.koin.compose.koinInject
 fun AppColumn(
     pkgNetStatService: PkgNetStatService = koinInject(),
     modifier: Modifier = Modifier,
-    limit: Int = 10
+    applimit: Int = 10,
+    buttonSize: Int = 50,
+    spaceBtwnItems: Int = 4
 ) {
     val appTotals = pkgNetStatService.cache.appNetStats.flatMap { entry ->
         entry.value.mapNotNull { (uid, netStat) ->
@@ -48,37 +54,48 @@ fun AppColumn(
         .mapValues { (_, values) -> values.sum() }
         .toList()
         .sortedByDescending { it.second }
-        .take(limit)
+        .take(applimit)
 
     LazyColumn(
         modifier = modifier
-            .padding(14.dp)
+            .padding(horizontal = 14.dp)
     ) {
         items(appTotals) { (uid, totalBytes) ->
             Surface(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 4.dp),
+                    .padding(vertical = spaceBtwnItems.dp),
                 shape = RoundedCornerShape(10.dp),
                 color = Color.White,
                 shadowElevation = 2.dp
             ) {
-                AppButton(uid, Bytes(totalBytes))
+                AppButton(uid = uid, consumption = Bytes(totalBytes), buttonSize = buttonSize)
             }
         }
     }
 }
 
+fun String.truncate(length: Int): String {
+    return if (this.length > length) {
+        this.substring(0, length) + "..."
+    } else {
+        this
+    }
+}
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun AppButton(
     uid: Int,
     consumption: Bytes,
-    packageService: PackageService = koinInject()
+    config: EcoTrackerConfig = koinInject(),
+    packageService: PackageService = koinInject(),
+    buttonSize: Int = 50,
 ) {
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
-    val defaultDrawable = ContextCompat.getDrawable(context, R.drawable.application_icon_default)
+    val pageState = LocalPagerState.current
+    val defaultDrawable = ContextCompat.getDrawable(context, R.drawable.android_icon)
     val appDrawable = packageService.appIcon(uid) ?: defaultDrawable
 
     Row(
@@ -87,7 +104,8 @@ fun AppButton(
             .fillMaxWidth()
             .clickable(onClick = {
                 scope.launch {
-                    // pageState.animateScrollToPage(0) // Changer à la page souhaitée
+                    config.currentApp = uid
+                    pageState.animateScrollToPage(3)
                 }
             }),
         verticalAlignment = Alignment.CenterVertically,
@@ -106,11 +124,11 @@ fun AppButton(
             update = { imageView ->
                 imageView.setImageDrawable(appDrawable)
             },
-            modifier = Modifier.size(25.dp)
+            modifier = Modifier.size(buttonSize.dp)
         )
         Spacer(modifier = Modifier.width(8.dp))
         Text(
-            text = packageService.appLabel(uid),
+            text = packageService.appLabel(uid).truncate(23),
             fontSize = 18.sp,
             fontWeight = FontWeight.Medium,
             modifier = Modifier.padding(horizontal = 1.dp),
