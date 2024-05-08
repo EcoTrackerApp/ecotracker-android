@@ -128,7 +128,7 @@ fun AppButton(
         )
         Spacer(modifier = Modifier.width(8.dp))
         Text(
-            text = packageService.appLabel(uid),
+            text = packageService.appLabel(uid).truncate(23),
             fontSize = 18.sp,
             fontWeight = FontWeight.Medium,
             modifier = Modifier.padding(horizontal = 1.dp),
