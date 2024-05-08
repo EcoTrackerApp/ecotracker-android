@@ -106,7 +106,7 @@ fun AppButton(
     val defaultDrawable = ContextCompat.getDrawable(context, R.drawable.android_icon)
     val appDrawable = packageService.appIcon(uid) ?: defaultDrawable
     val backgroundColor = if (highlighted) Color.Blue else Color.Black
-    val fontSize = if (highlighted) 24.sp else 18.sp
+    val fontSize = if (highlighted) 22.sp else 17.sp
 
 
     Row(
@@ -156,7 +156,7 @@ fun AppButton(
         Text(
             text = consumption.toString(),
             color = backgroundColor,
-            fontSize = 16.sp
+            fontSize = fontSize
         )
     }
 }
