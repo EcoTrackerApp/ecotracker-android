@@ -7,6 +7,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -16,6 +18,8 @@ import fr.umontpellier.ecotracker.ui.component.AppColumn
 
 @Composable
 fun Apps() {
+    val selectedApp = remember { mutableStateOf<Float?>(null) }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -45,7 +49,7 @@ fun Apps() {
             //shadowElevation = 4.dp,  // Utilisation de shadowElevation pour l'effet d'élévation
             color = Color.White
         ) {
-            PieConsumptionChart(applimit = 10)
+            PieConsumptionChart(applimit = 10, selectedAppCons = selectedApp)
         }
 
         Spacer(modifier = Modifier.height(6.dp))
@@ -71,7 +75,12 @@ fun Apps() {
                 .fillMaxWidth()
                 .weight(1f)
         ) {
-            AppColumn(applimit = 10, buttonSize = 25, spaceBtwnItems = 1)
+            AppColumn(
+                applimit = 10,
+                buttonSize = 25,
+                spaceBtwnItems = 1,
+                selectedAppCons = selectedApp
+            )
         }
     }
 }

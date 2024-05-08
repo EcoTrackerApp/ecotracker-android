@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
@@ -38,7 +39,8 @@ fun PieConsumptionChart(
     modifier: Modifier = Modifier,
     pkgNetStatService: PkgNetStatService = koinInject(),
     packageService: PackageService = koinInject(),
-    applimit: Int = 10
+    applimit: Int = 10,
+    selectedAppCons: MutableState<Float?>? = null,
 ) {
     // Modifier la fonction scaleValue pour arrondir les bytes à l'unité
     fun scaleValue(value: Float): String {
@@ -125,6 +127,10 @@ fun PieConsumptionChart(
                         override fun onValueSelected(e: Entry?, h: Highlight?) {
                             showPercentage = !showPercentage
 
+                            if (e != null) {
+                                selectedAppCons?.value = e.y
+                            }
+
                             if (showPercentage) {
                                 dataSet.valueFormatter = object : ValueFormatter() {
                                     override fun getFormattedValue(value: Float): String {
@@ -150,7 +156,9 @@ fun PieConsumptionChart(
                             invalidate()
                         }
 
-                        override fun onNothingSelected() {}
+                        override fun onNothingSelected() {
+                            selectedAppCons?.value = null
+                        }
                     })
                 }
             },
