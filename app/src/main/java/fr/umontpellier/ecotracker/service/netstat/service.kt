@@ -112,14 +112,14 @@ class DummyPkgNetStatService : PkgNetStatService {
                         mutableListOf(
                             PkgNetStatService.Result.App.Connection(
                                 ConnectionType.MOBILE,
-                                Bytes(200),
-                                Bytes(500)
+                                Bytes(200000),
+                                Bytes(500000)
                             )
                         )
                     ),
                     2 to PkgNetStatService.Result.App(
                         mutableListOf(
-                            PkgNetStatService.Result.App.Connection(ConnectionType.MOBILE, Bytes(350), Bytes(400))
+                            PkgNetStatService.Result.App.Connection(ConnectionType.WIFI, Bytes(350), Bytes(400))
                         )
                     )
                 ),
@@ -136,7 +136,7 @@ class DummyPkgNetStatService : PkgNetStatService {
                     2 to PkgNetStatService.Result.App(
                         mutableListOf(
                             PkgNetStatService.Result.App.Connection(
-                                ConnectionType.MOBILE,
+                                ConnectionType.WIFI,
                                 Bytes(650),
                                 Bytes(700)
                             )
