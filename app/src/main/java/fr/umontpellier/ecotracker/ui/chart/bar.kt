@@ -35,6 +35,7 @@ import org.koin.compose.koinInject
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
+
 @Composable
 fun BarConsumptionChart(
     pkgNetStatService: PkgNetStatService = koinInject(),
@@ -85,70 +86,77 @@ fun BarConsumptionChart(
                                 .sumOf { data -> data.received.value })
                         }
                         .toMap()
-                    Log.i("ecotracker", "${sentOverWifi} ${sentOverMobile} $receivedOverWifi $receivedOverMobile")
+                    Log.i(
+                        "ecotrackerLOGBAR",
+                        "Sent wifi: ${sentOverWifi} | ${sentOverMobile} $receivedOverWifi $receivedOverMobile"
+                    )
 
-                    // Create the entries for the chart with sent and received data
-                    val entries = sentOverWifi.entries.mapIndexed { index, (day, bytesSent) ->
+
+                    val entriesWifi = mutableListOf<BarEntry>()
+                    val entriesMobile = mutableListOf<BarEntry>()
+
+                    sentOverWifi.keys.forEachIndexed { index, day ->
+                        val bytesSentWifi = sentOverWifi[day]?.value ?: 0L
                         val bytesReceivedWifi = receivedOverWifi[day]?.value ?: 0L
+                        entriesWifi.add(
+                            BarEntry(
+                                index * 2f,
+                                floatArrayOf(bytesSentWifi.toFloat() , bytesReceivedWifi.toFloat() )
+                            )
+                        )
+
                         val bytesSentMobile = sentOverMobile[day]?.value ?: 0L
                         val bytesReceivedMobile = receivedOverMobile[day]?.value ?: 0L
-                        BarEntry(
-                            index.toFloat(),
-                            floatArrayOf(
-                                bytesSent.value.toFloat(),
-                                bytesReceivedWifi.toFloat(),
-                                bytesSentMobile.toFloat(),
-                                bytesReceivedMobile.toFloat()
+                        entriesMobile.add(
+                            BarEntry(
+                                index * 2f + 1f,
+                                floatArrayOf(bytesSentMobile.toFloat(), bytesReceivedMobile.toFloat())
                             )
                         )
                     }
 
-                    // Create the data set for the chart
-                    val dataSet = BarDataSet(entries, "").apply {
-                        colors = listOf(
-                            parseColor("#fcae60"),
-                            parseColor("#2a89b5"),
-                            parseColor("#dddd60"),
-                            parseColor("#2acf93")
-                        )
+                    val dataSetWifi = BarDataSet(entriesWifi, "Wifi").apply {
+                        colors = listOf(parseColor("#fcae60"), parseColor("#2a89b5"))
+                        stackLabels = arrayOf("Envoyé Wifi", "Reçu Wifi")
                         setDrawValues(false)
-                        highLightAlpha = 0
-                        // Set the labels for the legend
-                        stackLabels = arrayOf("Reçu Wifi", "Envoyé", "Reçu Mobile", "Envoyé")
-
-                        // Set the corner radius for the bars
-                        barShadowColor = Color.Black.toArgb()
-                        barBorderWidth = 1f
-                        barBorderColor = Color.Black.toArgb()
                     }
 
-                    // Add the data set to the chart
-                    data = BarData(dataSet)
+                    val dataSetMobile = BarDataSet(entriesMobile, "Mobile").apply {
+                        colors = listOf(parseColor("#dddd60"), parseColor("#2acf93"))
+                        stackLabels = arrayOf("Envoyé Mobile", "Reçu Mobile")
+                        setDrawValues(false)
+                    }
+
+
+
+
+                    data = BarData(dataSetWifi, dataSetMobile)
+
+                    groupBars(0.1f, 0.3f, 0.1f)
 
                     // Add a listener to show the values on the chart
-                    val chartClickListener = object : OnChartValueSelectedListener {
+                    setOnChartValueSelectedListener(object : OnChartValueSelectedListener {
                         override fun onValueSelected(e: Entry?, h: Highlight?) {
-                            val textSize = 12f // Size of the text
-
-                            dataSet.valueFormatter = object : ValueFormatter() {
-                                override fun getFormattedValue(value: Float): String {
-                                    return Bytes(value.toLong()).toString()
+                            data.dataSets.forEach { dataSet ->
+                                dataSet.valueFormatter = object : ValueFormatter() {
+                                    override fun getFormattedValue(value: Float): String {
+                                        return Bytes(value.toLong()).toString()
+                                    }
                                 }
+                                dataSet.valueTextSize = 12f // Size of the text
+                                dataSet.setDrawValues(true)
                             }
-
-                            dataSet.valueTextSize = textSize
-                            dataSet.setDrawValues(true)
-
                             invalidate()
                         }
 
                         override fun onNothingSelected() {
-                            dataSet.setDrawValues(false)
+                            data.dataSets.forEach { dataSet ->
+                                dataSet.setDrawValues(false)
+                            }
                             invalidate()
                         }
-                    }
-                    setOnChartValueSelectedListener(chartClickListener)
-                    // chart configuration
+                    })
+
                     legend.isEnabled = true // Enable the legend
                     legend.textSize = 15f // Set the text size for the legend
                     legend.form = Legend.LegendForm.CIRCLE // Set the form/shape of the legend
@@ -159,12 +167,17 @@ fun BarConsumptionChart(
                     getAxis(YAxis.AxisDependency.LEFT).textSize = 12f //  Set the text size for the left axis
                     xAxis.setDrawGridLines(false) // Disable the x axis grid lines
                     xAxis.position = XAxis.XAxisPosition.BOTTOM // Set the position of the x axis
+                    xAxis.setLabelCount(sentOverMobile.keys.size , true)
 
                     // Value formatter
                     // Set the formatter for the x axis
+                    Log.i("ecotrackerBARCHARTKEYS: ", ": ${sentOverWifi.keys.size}")
+                    Log.i("ecotrackerBARCHARTKEYS: ", ": ${sentOverMobile.keys.size}")
+
+
                     xAxis.valueFormatter = object : ValueFormatter() {
                         override fun getFormattedValue(value: Float): String {
-                            val instant = sentOverWifi.keys.elementAtOrNull(value.toInt())
+                            val instant = sentOverMobile.keys.elementAtOrNull(value.toInt())
                             return if (instant != null) {
                                 val formatter = DateTimeFormatter.ofPattern("dd/MM")
                                 formatter.format(instant.atZone(ZoneId.systemDefault()))
@@ -173,6 +186,7 @@ fun BarConsumptionChart(
                             }
                         }
                     }
+
 
                     // Set the formatter for the x axis
                     axisLeft.valueFormatter = object : ValueFormatter() {
@@ -197,6 +211,7 @@ fun BarConsumptionChart(
         )
     }
 }
+
 
 @Preview
 @Composable
