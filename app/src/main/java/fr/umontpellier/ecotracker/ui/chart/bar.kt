@@ -1,6 +1,7 @@
 package fr.umontpellier.ecotracker.ui.chart
 
 import android.graphics.Color.parseColor
+import android.util.Log
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -33,27 +34,12 @@ import org.koin.compose.KoinApplication
 import org.koin.compose.koinInject
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-import kotlin.math.abs
-import kotlin.math.log
-import kotlin.math.pow
 
 @Composable
 fun BarConsumptionChart(
     pkgNetStatService: PkgNetStatService = koinInject(),
     modifier: Modifier = Modifier
 ) {
-    // Function to scale the value in Bytes
-    fun scaleValue(value: Float): String {
-        val absBytes = abs(value)
-        val unit = "B"
-        if (absBytes < 1000) {
-            return "$value $unit"
-        }
-        val exp = (log(absBytes.toDouble(), 10.0) / log(1000.0, 10.0)).toInt()
-        val pre = "kMGTPE"[exp - 1]
-        return String.format("%.1f %c%s", value / 1000.0.pow(exp), pre, unit)
-    }
-
     Card(
         colors = CardDefaults.cardColors(Color.White),
         modifier = Modifier
@@ -99,6 +85,7 @@ fun BarConsumptionChart(
                                 .sumOf { data -> data.received.value })
                         }
                         .toMap()
+                    Log.i("ecotracker", "${sentOverWifi} ${sentOverMobile} $receivedOverWifi $receivedOverMobile")
 
                     // Create the entries for the chart with sent and received data
                     val entries = sentOverWifi.entries.mapIndexed { index, (day, bytesSent) ->
@@ -145,7 +132,7 @@ fun BarConsumptionChart(
 
                             dataSet.valueFormatter = object : ValueFormatter() {
                                 override fun getFormattedValue(value: Float): String {
-                                    return scaleValue(value)
+                                    return Bytes(value.toLong()).toString()
                                 }
                             }
 
@@ -190,7 +177,7 @@ fun BarConsumptionChart(
                     // Set the formatter for the x axis
                     axisLeft.valueFormatter = object : ValueFormatter() {
                         override fun getFormattedValue(value: Float): String {
-                            return scaleValue(value)
+                            return Bytes(value.toLong()).toString()
                         }
                     }
 
