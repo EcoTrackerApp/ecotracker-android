@@ -45,7 +45,7 @@ fun AppPage(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Magenta.copy(alpha = .25f))
+            .background(Color(0xffbe5683))
     ) {
         Text(
             packageService.appLabel(currentApp),
