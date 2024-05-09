@@ -44,7 +44,7 @@ fun Dashboard(
     var pageIndex by remember { mutableStateOf(0) }
 
     Log.i("ecotracker", pkgNetStatService.cache.toString())
-    Column(verticalArrangement = Arrangement.spacedBy(24.dp), modifier = Modifier.padding(bottom = 32.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(18.dp), modifier = Modifier.padding(bottom = 32.dp)) {
         Header()
         Column(
             modifier = Modifier

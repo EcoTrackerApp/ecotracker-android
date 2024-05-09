@@ -1,7 +1,10 @@
 package fr.umontpellier.ecotracker.ui.component
 
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -12,8 +15,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import fr.umontpellier.ecotracker.R
+import fr.umontpellier.ecotracker.ecoTrackerPreviewModule
 import fr.umontpellier.ecotracker.service.EcoTrackerConfig
+import org.koin.compose.KoinApplication
 import org.koin.compose.koinInject
 
 @Composable
@@ -26,16 +32,22 @@ fun ModelButton(modifier: Modifier = Modifier) {
         config.model = currentModel.value
     }
 
-    Row(verticalAlignment = Alignment.CenterVertically) {
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable { toggleModel() }) {
         Text("Modèle : ${currentModel.value}")
-        IconButton(onClick = { toggleModel() }) {
+        IconButton(
+            onClick = { toggleModel() }, modifier = Modifier
+                .width(20.dp)
+                .padding(start = 4.dp)
+        ) {
             Icon(painter = painterResource(id = R.drawable.commutateur), contentDescription = "Switch Model")
         }
     }
 }
 
-@Preview(showBackground = true)
+@Preview
 @Composable
-fun PreviewModelButton() {
-    ModelButton()
+fun ModelButtonPreview(modifier: Modifier = Modifier) {
+    KoinApplication(application = { modules(ecoTrackerPreviewModule) }) {
+        ModelButton()
+    }
 }
