@@ -36,7 +36,8 @@ fun GlobalChart() {
                 fontSize = 25.sp,
                 fontWeight = FontWeight.ExtraBold,
                 letterSpacing = (-0.5).sp,
-                color = Color.White
+                color = Color.White,
+                modifier = Modifier.padding(top = 10.dp, start = 16.dp)
             )
         }
 

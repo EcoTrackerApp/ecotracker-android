@@ -69,6 +69,7 @@ fun Apps() {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
+                .padding(bottom = 16.dp)
                 .weight(1f)
         ) {
             AppColumn(applimit = 10, buttonSize = 25, spaceBtwnItems = 1)
