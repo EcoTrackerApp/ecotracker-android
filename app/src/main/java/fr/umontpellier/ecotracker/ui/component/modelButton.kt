@@ -27,7 +27,7 @@ fun ModelButton(modifier: Modifier = Modifier) {
     }
 
     Row(verticalAlignment = Alignment.CenterVertically) {
-        Text("Model : ${currentModel.value}")
+        Text("Modèle : ${currentModel.value}")
         IconButton(onClick = { toggleModel() }) {
             Icon(painter = painterResource(id = R.drawable.commutateur), contentDescription = "Switch Model")
         }

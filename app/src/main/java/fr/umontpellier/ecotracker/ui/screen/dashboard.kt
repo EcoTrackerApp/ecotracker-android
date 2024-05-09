@@ -66,6 +66,7 @@ fun Dashboard(
             )
             BytesReceived()
             BytesSent()
+            ModelButton()
         }
         Column(
             verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -80,8 +81,7 @@ fun Dashboard(
                 modifier = Modifier.padding(horizontal = 8.dp),
                 letterSpacing = (-0.5).sp
             )
-            Row(
-            ) {
+            Row {
                 Button(
                     onClick = { pageIndex = (pageIndex - 1).coerceAtLeast(0) },
                     modifier = Modifier.weight(1f),
@@ -91,7 +91,7 @@ fun Dashboard(
                     )
                 ) { Text("<", style = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Bold)) }
 
-                Box() {
+                Box {
                     when (pageIndex) {
                         0 -> Equivalent(image = R.drawable.car, text = "C'est ${modelService.total.carKm} en voiture")
                         1 -> Equivalent(image = R.drawable.train, text = "ou ${modelService.total.tgvKm} en train")
@@ -189,9 +189,6 @@ fun Header(
                         modifier = Modifier
                             .width(14.dp)
                     )
-                }
-                Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
-                  ModelButton()
                 }
             }
         }
