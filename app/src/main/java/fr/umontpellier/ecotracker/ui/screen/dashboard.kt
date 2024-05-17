@@ -45,85 +45,106 @@ fun Dashboard(
 ) {
     var pageIndex by remember { mutableStateOf(0) }
 
-    Column(verticalArrangement = Arrangement.spacedBy(18.dp), modifier = Modifier.padding(bottom = 32.dp)) {
-        Header()
-        Column(
-            modifier = Modifier
-                .padding(horizontal = 16.dp)
-        ) {
-            AverageAlert()
-        }
-        Column(
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier
-                .padding(horizontal = 16.dp)
-        ) {
-            Text(
-                text = "Dans le détail",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.ExtraBold,
-                modifier = Modifier.padding(horizontal = 8.dp),
-                letterSpacing = (-0.5).sp
-            )
-            BytesReceived()
-            BytesSent()
-            ModelButton()
-        }
-        Column(
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.fillMaxWidth()
-        ) {
+    Log.i("ecotracker", pkgNetStatService.cache.toString())
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(verticalArrangement = Arrangement.spacedBy(18.dp), modifier = Modifier.padding(bottom = 32.dp)) {
+            Header()
+            Column(
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
+            ) {
+                AverageAlert()
+            }
+            Column(
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
+            ) {
+                Text(
+                    text = "Dans le détail",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    letterSpacing = (-0.5).sp
+                )
+                BytesReceived()
+                BytesSent()
+            }
+            Column(
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
+            ) {
 
-            Text(
-                text = "Concrètement, qu'est-ce que ça veut dire?",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.ExtraBold,
-                modifier = Modifier.padding(horizontal = 8.dp),
-                letterSpacing = (-0.5).sp
-            )
-            Row {
-                Button(
-                    onClick = { pageIndex = (pageIndex - 1).coerceAtLeast(0) },
-                    modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.Transparent,
-                        contentColor = Color.DarkGray
-                    )
-                ) { Text("<", style = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Bold)) }
+                Text(
+                    text = "Concrètement, qu'est-ce que ça veut dire?",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    letterSpacing = (-0.5).sp
+                )
+                Row {
+                    Button(
+                        onClick = {
+                            pageIndex = if (pageIndex == 0) {
+                                2
+                            } else {
+                                (pageIndex - 1).coerceAtLeast(0)
+                            }
+                        },
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.Transparent,
+                            contentColor = Color.DarkGray
+                        )
+                    ) { Text("<", style = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Bold)) }
 
-                Box {
-                    when (pageIndex) {
-                        0 -> Equivalent(image = R.drawable.car, text = "C'est ${modelService.total.carKm} en voiture")
-                        1 -> Equivalent(image = R.drawable.train, text = "ou ${modelService.total.tgvKm} en train")
-                        2 -> Equivalent(
-                            image = R.drawable.plane,
-                            text = "ou  ${modelService.total.planeMeter} en avion"
+                    Box {
+                        when (pageIndex) {
+                            0 -> Equivalent(
+                                image = R.drawable.car,
+                                text = "C'est ${modelService.total.carKm} en voiture"
+                            )
+
+                            1 -> Equivalent(image = R.drawable.train, text = "ou ${modelService.total.tgvKm} en train")
+                            2 -> Equivalent(
+                                image = R.drawable.plane,
+                                text = "ou  ${modelService.total.planeMeter} en avion"
+                            )
+
+                        }
+                    }
+
+                    Button(
+                        onClick = { pageIndex = (pageIndex + 1).coerceAtMost(2) },
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.Transparent,
+                            contentColor = Color.DarkGray
                         )
 
-                    }
+                    ) { Text(">", style = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Bold)) }
                 }
 
-                Button(
-                    onClick = { pageIndex = (pageIndex + 1).coerceAtMost(2) },
-                    modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.Transparent,
-                        contentColor = Color.DarkGray
-                    )
-
-                ) { Text(">", style = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Bold)) }
+                Equivalent(
+                    image = R.drawable.tree,
+                    text = "Il faut ${
+                        modelService.total.tooTreeEquivalent(
+                            pkgNetStatService.cache.start,
+                            pkgNetStatService.cache.end
+                        )
+                    } arbres pour absorber vos emissions"
+                )
             }
-
-            Equivalent(
-                image = R.drawable.tree,
-                text = "Il faut ${
-                    modelService.total.tooTreeEquivalent(
-                        pkgNetStatService.cache.start,
-                        pkgNetStatService.cache.end
-                    )
-                } arbres pour absorber votre consommation",
+        }
+        // Positionne le bouton en haut à droite
+        Row(
+            modifier = Modifier.fillMaxSize(),
+            horizontalArrangement = Arrangement.End,
+            verticalAlignment = Alignment.Top
+        ) {
+            ModelButton(
+                modifier = Modifier.padding(top = 10.dp)
             )
+            Spacer(modifier = Modifier.width(16.dp))
         }
     }
 }
@@ -275,7 +296,7 @@ fun BytesSent(
             .fillMaxWidth()
     ) {
         Text(
-            "Vos émissions 4G et Wifi",
+            "Vos émissions Mobile et Wifi",
             textAlign = TextAlign.Center,
             fontWeight = FontWeight.Bold,
             color = Color(0xBAFFFFFF),
@@ -310,7 +331,7 @@ fun BytesReceived(
             .fillMaxWidth()
     ) {
         Text(
-            "Vos récéptions 4G et Wifi",
+            "Vos récéptions Mobile et Wifi",
             textAlign = TextAlign.Center,
             fontWeight = FontWeight.Bold,
             color = Color(0xBAFFFFFF),
