@@ -8,6 +8,9 @@ import fr.umontpellier.ecotracker.service.netstat.PkgNetStatService
 import java.time.Instant
 
 interface ModelService {
+    val models: Collection<String>
+    operator fun get(model: String): Model?
+
     val total: CO2
     val received: CO2
     val sent: CO2
@@ -19,6 +22,11 @@ class DummyModelService(val pkgNetStatService: PkgNetStatService) : ModelService
     override val total = CO2(100.0)
     override val sent = CO2(50.0)
     override val received = CO2(50.0)
+
+    override val models: Collection<String>
+        get() = emptyList()
+
+    override fun get(model: String) = null
 
     override val results: Map<Instant, LinkedHashMap<Int, Model.AppEmission>>
         get() = pkgNetStatService.cache.appNetStats.map { (date, map) ->
@@ -36,10 +44,12 @@ class AndroidModelService(
     private val pkgNetStatService: PkgNetStatService,
 ) : ModelService {
 
-    private val models = mutableMapOf<String, Model>(
+    private val modelMap = mutableMapOf<String, Model>(
         "1byte" to OneByte,
         "swd" to SustainableWebDesign
     )
+    override val models: Collection<String>
+        get() = modelMap.keys
 
     val model: Model
         get() = this[config.model]!!
@@ -75,6 +85,6 @@ class AndroidModelService(
     /**
      * Retourne pour un nom de [model] une instance de [Model].
      */
-    operator fun get(model: String) = models[model]
+    override operator fun get(model: String) = modelMap[model]
 
 }
