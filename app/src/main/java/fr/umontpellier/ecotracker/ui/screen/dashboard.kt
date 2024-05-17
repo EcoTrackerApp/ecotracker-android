@@ -1,6 +1,5 @@
 package fr.umontpellier.ecotracker.ui.screen
 
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -27,7 +26,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import fr.umontpellier.ecotracker.R
 import fr.umontpellier.ecotracker.ecoTrackerPreviewModule
+import fr.umontpellier.ecotracker.service.EcoTrackerConfig
 import fr.umontpellier.ecotracker.service.model.ModelService
+import fr.umontpellier.ecotracker.service.model.unit.Usage
 import fr.umontpellier.ecotracker.service.netstat.PkgNetStatService
 import fr.umontpellier.ecotracker.ui.component.Alert
 import fr.umontpellier.ecotracker.ui.component.ModelButton
@@ -35,6 +36,7 @@ import fr.umontpellier.ecotracker.ui.dialog.ChangeDateDialog
 import fr.umontpellier.ecotracker.ui.util.dateFormatter
 import org.koin.compose.KoinApplication
 import org.koin.compose.koinInject
+import java.time.Duration
 
 @Composable
 fun Dashboard(
@@ -43,7 +45,6 @@ fun Dashboard(
 ) {
     var pageIndex by remember { mutableStateOf(0) }
 
-    Log.i("ecotracker", pkgNetStatService.cache.toString())
     Column(verticalArrangement = Arrangement.spacedBy(18.dp), modifier = Modifier.padding(bottom = 32.dp)) {
         Header()
         Column(
@@ -197,19 +198,48 @@ fun Header(
 }
 
 @Composable
-fun AverageAlert() {
+fun AverageAlert(config: EcoTrackerConfig = koinInject(), pkgNetStatService: PkgNetStatService = koinInject()) {
+    val days = Duration.between(config.dates.first, config.dates.second).toDays()
+    val usage = pkgNetStatService.total.usage(days)
+    val gradient = when (usage) {
+        Usage.LOW -> horizontalGradient(
+            colors = listOf(
+                Color(0xFFD0E8CF),
+                Color(0xFF98C387),
+                Color(0xFF6C985B)
+            )
+        )
+
+        Usage.MEDIUM -> horizontalGradient(
+            colors = listOf(
+                Color(0xFFD0E8CF),
+                Color(0xFF98C387),
+                Color(0xFF6C985B)
+            )
+        )
+
+        Usage.HIGH -> horizontalGradient(
+            colors = listOf(
+                Color(0xFFFFABAB),
+                Color(0xFFE57373),
+                Color(0xFFAF4448)
+            )
+        )
+    }
+    val text = when (usage) {
+        Usage.LOW -> "Vous êtes éco-responsable !" to "Vous consommez moins que le français moyen en 2021."
+        Usage.MEDIUM -> "Vous êtes dans la moyenne !" to "Continuez comme ça !"
+        Usage.HIGH -> "Vous êtes au dessus de la moyenne." to "Vous consommez plus que le français moyen en 2021!"
+    }
+
     Alert(
-        horizontalGradient(
-            0F to Color(0xFFABCF9A),
-            0.72F to Color(0xFF7E9972),
-            1F to Color(0xFF57694E)
-        ),
+        gradient,
         modifier = Modifier
             .padding(horizontal = 12.dp, vertical = 8.dp)
             .fillMaxWidth()
     ) {
         Text(
-            "Vous êtes dans la moyenne !",
+            text.first,
             textAlign = TextAlign.Center,
             fontWeight = FontWeight.SemiBold,
             color = Color(0xBAFFFFFF),
@@ -218,7 +248,7 @@ fun AverageAlert() {
             letterSpacing = TextUnit(-0.5F, TextUnitType.Sp)
         )
         Text(
-            "Continuez comme ça, c'est excellent !",
+            text.second,
             textAlign = TextAlign.Center,
             color = Color(0xBAFFFFFF),
             fontWeight = FontWeight.ExtraBold,

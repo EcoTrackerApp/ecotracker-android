@@ -112,7 +112,7 @@ class DummyPkgNetStatService : PkgNetStatService {
                         mutableListOf(
                             PkgNetStatService.Result.App.Connection(
                                 ConnectionType.MOBILE,
-                                Bytes(200000),
+                                Bytes(20000000000),
                                 Bytes(500000)
                             )
                         )
