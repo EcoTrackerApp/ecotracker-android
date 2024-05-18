@@ -3,6 +3,7 @@ package fr.umontpellier.ecotracker.service.model.unit
 import java.time.Duration
 import java.time.Instant
 import kotlin.math.abs
+import kotlin.math.ceil
 import kotlin.math.log
 import kotlin.math.pow
 
@@ -32,7 +33,7 @@ value class CO2(val value: Double) {
     fun tooTreeEquivalent(start: Instant, end: Instant): String {
         val capacity = TreeCapacityForGivenDuration(start, end)
         val result = value / capacity
-        return String.format("%.1f", result)
+        return ceil(result).toInt().toString()
     }
 
     fun TreeCapacityForGivenDuration(start: Instant, end: Instant): Double {
