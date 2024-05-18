@@ -11,12 +11,10 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.github.mikephil.charting.charts.BarChart
-import com.github.mikephil.charting.components.Legend
 import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.components.YAxis
 import com.github.mikephil.charting.data.BarData
@@ -86,6 +84,7 @@ fun BarConsumptionChart(
                                 .sumOf { data -> data.received.value })
                         }
                         .toMap()
+
                     Log.i(
                         "ecotrackerLOGBAR",
                         "Sent wifi: ${sentOverWifi} | ${sentOverMobile} $receivedOverWifi $receivedOverMobile"
@@ -101,7 +100,7 @@ fun BarConsumptionChart(
                         entriesWifi.add(
                             BarEntry(
                                 index * 2f,
-                                floatArrayOf(bytesSentWifi.toFloat() , bytesReceivedWifi.toFloat() )
+                                floatArrayOf(bytesSentWifi.toFloat(), bytesReceivedWifi.toFloat())
                             )
                         )
 
@@ -115,24 +114,28 @@ fun BarConsumptionChart(
                         )
                     }
 
-                    val dataSetWifi = BarDataSet(entriesWifi, "Wifi").apply {
+                    val dataSetWifi = BarDataSet(entriesWifi, "").apply {
                         colors = listOf(parseColor("#fcae60"), parseColor("#2a89b5"))
-                        stackLabels = arrayOf("Envoyé Wifi", "Reçu Wifi")
+                        stackLabels = arrayOf("\uD83D\uDEDC ⬆\uFE0F", "\uD83D\uDEDC ⬇\uFE0F") // Change labels here
                         setDrawValues(false)
                     }
 
-                    val dataSetMobile = BarDataSet(entriesMobile, "Mobile").apply {
+                    val dataSetMobile = BarDataSet(entriesMobile, "").apply {
                         colors = listOf(parseColor("#dddd60"), parseColor("#2acf93"))
-                        stackLabels = arrayOf("Envoyé Mobile", "Reçu Mobile")
+                        stackLabels = arrayOf("\uD83D\uDCF6 ⬆\uFE0F", "\uD83D\uDCF6 ⬇\uFE0F") // Change labels here
                         setDrawValues(false)
                     }
-
-
 
 
                     data = BarData(dataSetWifi, dataSetMobile)
 
-                    groupBars(0.1f, 0.3f, 0.1f)
+                    Log.i(
+                        "ecotrackerLOGData",
+                        "\n Final Data: \n  ${data} | "
+                    )
+
+
+                    groupBars(-0.6f, 0.25f, 0.05f)
 
                     // Add a listener to show the values on the chart
                     setOnChartValueSelectedListener(object : OnChartValueSelectedListener {
@@ -143,7 +146,7 @@ fun BarConsumptionChart(
                                         return Bytes(value.toLong()).toString()
                                     }
                                 }
-                                dataSet.valueTextSize = 12f // Size of the text
+                                dataSet.valueTextSize = 8f // Size of the text
                                 dataSet.setDrawValues(true)
                             }
                             invalidate()
@@ -159,7 +162,6 @@ fun BarConsumptionChart(
 
                     legend.isEnabled = true // Enable the legend
                     legend.textSize = 15f // Set the text size for the legend
-                    legend.form = Legend.LegendForm.CIRCLE // Set the form/shape of the legend
                     description.isEnabled = false // Disable the description
                     animateXY(1000, 1000) // Enable the animation
 
@@ -167,7 +169,7 @@ fun BarConsumptionChart(
                     getAxis(YAxis.AxisDependency.LEFT).textSize = 12f //  Set the text size for the left axis
                     xAxis.setDrawGridLines(false) // Disable the x axis grid lines
                     xAxis.position = XAxis.XAxisPosition.BOTTOM // Set the position of the x axis
-                    xAxis.setLabelCount(sentOverMobile.keys.size , true)
+                    xAxis.setLabelCount(sentOverMobile.keys.size, false)
 
                     // Value formatter
                     // Set the formatter for the x axis
@@ -177,7 +179,7 @@ fun BarConsumptionChart(
 
                     xAxis.valueFormatter = object : ValueFormatter() {
                         override fun getFormattedValue(value: Float): String {
-                            val instant = sentOverMobile.keys.elementAtOrNull(value.toInt())
+                            val instant = sentOverMobile.keys.elementAtOrNull(value.toInt() / 2)
                             return if (instant != null) {
                                 val formatter = DateTimeFormatter.ofPattern("dd/MM")
                                 formatter.format(instant.atZone(ZoneId.systemDefault()))
