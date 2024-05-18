@@ -11,12 +11,10 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.github.mikephil.charting.charts.BarChart
-import com.github.mikephil.charting.components.Legend
 import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.components.YAxis
 import com.github.mikephil.charting.data.BarData
@@ -102,7 +100,7 @@ fun BarConsumptionChart(
                         entriesWifi.add(
                             BarEntry(
                                 index * 2f,
-                                floatArrayOf(bytesSentWifi.toFloat() , bytesReceivedWifi.toFloat() )
+                                floatArrayOf(bytesSentWifi.toFloat(), bytesReceivedWifi.toFloat())
                             )
                         )
 
@@ -131,7 +129,13 @@ fun BarConsumptionChart(
 
                     data = BarData(dataSetWifi, dataSetMobile)
 
-                    groupBars(0.1f, 0.3f, 0.1f)
+                    Log.i(
+                        "ecotrackerLOGData",
+                        "\n Final Data: \n  ${data} | "
+                    )
+
+
+                    groupBars(-0.6f, 0.25f, 0.05f)
 
                     // Add a listener to show the values on the chart
                     setOnChartValueSelectedListener(object : OnChartValueSelectedListener {
@@ -142,7 +146,7 @@ fun BarConsumptionChart(
                                         return Bytes(value.toLong()).toString()
                                     }
                                 }
-                                dataSet.valueTextSize = 12f // Size of the text
+                                dataSet.valueTextSize = 8f // Size of the text
                                 dataSet.setDrawValues(true)
                             }
                             invalidate()
@@ -165,7 +169,7 @@ fun BarConsumptionChart(
                     getAxis(YAxis.AxisDependency.LEFT).textSize = 12f //  Set the text size for the left axis
                     xAxis.setDrawGridLines(false) // Disable the x axis grid lines
                     xAxis.position = XAxis.XAxisPosition.BOTTOM // Set the position of the x axis
-                    xAxis.setLabelCount(sentOverMobile.keys.size , false)
+                    xAxis.setLabelCount(sentOverMobile.keys.size, false)
 
                     // Value formatter
                     // Set the formatter for the x axis
