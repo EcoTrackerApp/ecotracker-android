@@ -2,10 +2,8 @@ package fr.umontpellier.ecotracker.service.model.impl
 
 import fr.umontpellier.ecotracker.service.EcoTrackerConfig
 import fr.umontpellier.ecotracker.service.model.Model
-import fr.umontpellier.ecotracker.service.model.unit.Bytes
 import fr.umontpellier.ecotracker.service.model.unit.CO2
 import fr.umontpellier.ecotracker.service.netstat.PkgNetStatService
-import java.time.temporal.TemporalAmount
 
 object SustainableWebDesign : Model {
     //Plus d'informations sur le modele: https://sustainablewebdesign.org/calculating-digital-emissions/
@@ -41,8 +39,8 @@ object SustainableWebDesign : Model {
 
     fun bytesToKwh(byteAmount: Double): Double {
         //e1 et e2 sont normalement la valeur en bytes du trafic d'un nouveau visieur et d'un visiteur regulier, a voir comment transpoer pour une application
-        var e1 = byteAmount * KWH_PER_GB * 0.75
-        var e2 = byteAmount * KWH_PER_GB * 0.25 * 0.02
+        val e1 = byteAmount * KWH_PER_GB * 0.75
+        val e2 = byteAmount * KWH_PER_GB * 0.25 * 0.02
         return (e1 + e2) / 1.0e9
     }
 

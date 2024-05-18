@@ -10,7 +10,6 @@ import fr.umontpellier.ecotracker.service.DummyPackageService
 import fr.umontpellier.ecotracker.service.EcoTrackerConfig
 import fr.umontpellier.ecotracker.service.PackageService
 import fr.umontpellier.ecotracker.service.model.AndroidModelService
-import fr.umontpellier.ecotracker.service.model.DummyModelService
 import fr.umontpellier.ecotracker.service.model.ModelService
 import fr.umontpellier.ecotracker.service.netstat.AndroidNetStartService
 import fr.umontpellier.ecotracker.service.netstat.DummyPkgNetStatService
@@ -53,7 +52,7 @@ val ecoTrackerPreviewModule = module {
     singleOf(::DummyPkgNetStatService) {
         bind<PkgNetStatService>()
     }
-    singleOf(::DummyModelService) {
+    singleOf(::AndroidModelService) {
         bind<ModelService>()
     }
     singleOf(::DummyPackageService) {
