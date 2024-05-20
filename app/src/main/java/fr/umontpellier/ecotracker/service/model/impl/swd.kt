@@ -41,7 +41,6 @@ object SustainableWebDesign : Model {
     }
 
     fun bytesToKwh(byteAmount: Double): Double {
-        //e1 et e2 sont normalement la valeur en bytes du trafic d'un nouveau visieur et d'un visiteur regulier, a voir comment transpoer pour une application
         val e1 = byteAmount * KWH_PER_GB * 0.75
         val e2 = byteAmount * KWH_PER_GB * 0.25 * 0.02
         return (e1 + e2) / 1.0e9

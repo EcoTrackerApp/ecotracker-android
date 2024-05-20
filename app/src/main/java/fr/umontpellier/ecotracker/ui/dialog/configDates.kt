@@ -46,7 +46,6 @@ fun ChangeDateDialog(
                         DatePicker(title = { Text("Fin") }, state = end)
                         Spacer(modifier = Modifier.height(8.dp))
 
-                        // Duration
                         OutlinedTextField(
                             value = duration,
                             onValueChange = { duration = it },
@@ -57,7 +56,6 @@ fun ChangeDateDialog(
                         )
                         Spacer(modifier = Modifier.height(8.dp))
 
-                        // Duration Unit Dropdown
                         var expanded by remember { mutableStateOf(false) }
 
                         Box(

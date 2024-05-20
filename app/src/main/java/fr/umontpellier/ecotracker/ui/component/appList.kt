@@ -129,7 +129,7 @@ fun AppButton(
                 ImageView(context).apply {
                     setImageDrawable(appDrawable)
                     layoutParams = ViewGroup.LayoutParams(
-                        context.dpToPx(50), // Convert dp to pixel
+                        context.dpToPx(50),
                         context.dpToPx(50)
                     )
                 }
@@ -161,7 +161,6 @@ fun AppButton(
     }
 }
 
-// Helper function to convert dp to pixels
 fun Context.dpToPx(dp: Int): Int {
     return (dp * resources.displayMetrics.density).toInt()
 }

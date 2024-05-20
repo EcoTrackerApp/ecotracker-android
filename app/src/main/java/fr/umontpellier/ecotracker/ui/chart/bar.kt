@@ -49,7 +49,6 @@ fun BarConsumptionChart(
         AndroidView(
             factory = { context ->
                 BarChart(context).apply {
-                    // Get the data sent from the cache in Bytes
                     val sentOverWifi = pkgNetStatService.cache.appNetStats
                         .map { (day, perApp) ->
                             day to Bytes(perApp
@@ -67,7 +66,6 @@ fun BarConsumptionChart(
                         }
                         .toMap()
 
-                    // Get the data received from the cache in Bytes
                     val receivedOverWifi = pkgNetStatService.cache.appNetStats
                         .map { (day, perApp) ->
                             day to Bytes(perApp
@@ -116,13 +114,13 @@ fun BarConsumptionChart(
 
                     val dataSetWifi = BarDataSet(entriesWifi, "").apply {
                         colors = listOf(parseColor("#fcae60"), parseColor("#2a89b5"))
-                        stackLabels = arrayOf("\uD83D\uDEDC ⬆\uFE0F", "\uD83D\uDEDC ⬇\uFE0F") // Change labels here
+                        stackLabels = arrayOf("\uD83D\uDEDC ⬆\uFE0F", "\uD83D\uDEDC ⬇\uFE0F")
                         setDrawValues(false)
                     }
 
                     val dataSetMobile = BarDataSet(entriesMobile, "").apply {
                         colors = listOf(parseColor("#dddd60"), parseColor("#2acf93"))
-                        stackLabels = arrayOf("\uD83D\uDCF6 ⬆\uFE0F", "\uD83D\uDCF6 ⬇\uFE0F") // Change labels here
+                        stackLabels = arrayOf("\uD83D\uDCF6 ⬆\uFE0F", "\uD83D\uDCF6 ⬇\uFE0F")
                         setDrawValues(false)
                     }
 
@@ -137,7 +135,6 @@ fun BarConsumptionChart(
 
                     groupBars(-0.6f, 0.25f, 0.05f)
 
-                    // Add a listener to show the values on the chart
                     setOnChartValueSelectedListener(object : OnChartValueSelectedListener {
                         override fun onValueSelected(e: Entry?, h: Highlight?) {
                             data.dataSets.forEach { dataSet ->
@@ -146,7 +143,7 @@ fun BarConsumptionChart(
                                         return Bytes(value.toLong()).toString()
                                     }
                                 }
-                                dataSet.valueTextSize = 8f // Size of the text
+                                dataSet.valueTextSize = 8f
                                 dataSet.setDrawValues(true)
                             }
                             invalidate()
@@ -160,21 +157,16 @@ fun BarConsumptionChart(
                         }
                     })
 
-                    legend.isEnabled = true // Enable the legend
-                    legend.textSize = 15f // Set the text size for the legend
-                    description.isEnabled = false // Disable the description
-                    animateXY(1000, 1000) // Enable the animation
+                    legend.isEnabled = true
+                    legend.textSize = 15f
+                    description.isEnabled = false
+                    animateXY(1000, 1000)
 
-                    // axis configuration
-                    getAxis(YAxis.AxisDependency.LEFT).textSize = 12f //  Set the text size for the left axis
-                    xAxis.setDrawGridLines(false) // Disable the x axis grid lines
-                    xAxis.position = XAxis.XAxisPosition.BOTTOM // Set the position of the x axis
+                    getAxis(YAxis.AxisDependency.LEFT).textSize = 12f
+                    xAxis.setDrawGridLines(false)
+                    xAxis.position = XAxis.XAxisPosition.BOTTOM
                     xAxis.setLabelCount(sentOverMobile.keys.size, false)
 
-                    // Value formatter
-                    // Set the formatter for the x axis
-                    Log.i("ecotrackerBARCHARTKEYS: ", ": ${sentOverWifi.keys.size}")
-                    Log.i("ecotrackerBARCHARTKEYS: ", ": ${sentOverMobile.keys.size}")
 
 
                     xAxis.valueFormatter = object : ValueFormatter() {
@@ -190,17 +182,15 @@ fun BarConsumptionChart(
                     }
 
 
-                    // Set the formatter for the x axis
                     axisLeft.valueFormatter = object : ValueFormatter() {
                         override fun getFormattedValue(value: Float): String {
                             return Bytes(value.toLong()).toString()
                         }
                     }
 
-                    axisLeft.axisMinimum = 0f // Set the minimum value for the left axis
-                    axisRight.isEnabled = false // Disable the right axis
+                    axisLeft.axisMinimum = 0f
+                    axisRight.isEnabled = false
 
-                    // Disable the zoom and drag
                     setScaleEnabled(false)
                     setPinchZoom(false)
                     isDragEnabled = false

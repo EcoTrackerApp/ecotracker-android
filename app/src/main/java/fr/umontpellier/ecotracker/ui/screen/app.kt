@@ -61,7 +61,6 @@ fun AppPage(
                 .weight(2f)
                 .padding(16.dp),
             shape = RoundedCornerShape(10.dp),
-            //shadowElevation = 4.dp,  // Utilisation de shadowElevation pour l'effet d'élévation
             color = Color.White
         ) {
             LineConsumptionChart(appId = currentApp)
@@ -72,7 +71,6 @@ fun AppPage(
                 .fillMaxWidth()
                 .padding(16.dp),
             shape = RoundedCornerShape(10.dp),
-            //shadowElevation = 4.dp,  // Utilisation de shadowElevation pour l'effet d'élévation
             color = Color.White
         ) {
             Row(

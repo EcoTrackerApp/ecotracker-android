@@ -42,7 +42,6 @@ fun LineConsumptionChart(
 ) {
 
 
-    // Function to scale the value in Bytes
     fun scaleValue(value: Float): String {
         val absBytes = abs(value)
         val unit = "B"
@@ -64,7 +63,6 @@ fun LineConsumptionChart(
         AndroidView(
             factory = { context ->
                 LineChart(context).apply {
-                    // Préparation des données
                     val monthConsumptionSent = pkgNetStatService.cache.appNetStats.map { (day, perApp) ->
                         day to Bytes(perApp.filter { (app, _) -> app == appId }.map { (_, data) -> data.sent.value }
                             .sum())
@@ -87,7 +85,7 @@ fun LineConsumptionChart(
                         color = parseColor("#fcae60")
                         setDrawValues(false)
                         lineWidth = 6f
-                        valueTextSize = 12f // Augmenter la taille du texte
+                        valueTextSize = 12f
                         valueFormatter = object : ValueFormatter() {
                             override fun getFormattedValue(value: Float): String {
                                 return scaleValue(value)
@@ -99,7 +97,7 @@ fun LineConsumptionChart(
                         color = parseColor("#2a7bb5")
                         setDrawValues(false)
                         lineWidth = 6f
-                        valueTextSize = 12f // Augmenter la taille du texte
+                        valueTextSize = 12f
                         valueFormatter = object : ValueFormatter() {
                             override fun getFormattedValue(value: Float): String {
                                 return scaleValue(value)
@@ -111,7 +109,6 @@ fun LineConsumptionChart(
 
                     this.data = lineData
 
-                    // Configuration du graphique
                     this.legend.isEnabled = true
                     this.legend.textSize = 12f
                     this.description.isEnabled = false
@@ -119,7 +116,6 @@ fun LineConsumptionChart(
                     setPinchZoom(false)
                     isDragEnabled = false
 
-                    // Configuration de l'axe X
                     this.axisRight.isEnabled = false
                     axisLeft.axisMinimum = 0f
                     animateX(1000)
@@ -137,14 +133,12 @@ fun LineConsumptionChart(
                             }
                         }
                     }
-                    // Set the formatter for the axisLeft
                     axisLeft.valueFormatter = object : ValueFormatter() {
                         override fun getFormattedValue(value: Float): String {
                             return scaleValue(value)
                         }
                     }
 
-                    // Ajouter un OnChartGestureListener
                     var showValues = false
                     this.setOnChartGestureListener(object : OnChartGestureListener {
                         override fun onChartSingleTapped(me: MotionEvent?) {
@@ -154,7 +148,6 @@ fun LineConsumptionChart(
                             invalidate()
                         }
 
-                        // Implémenter les autres méthodes avec un corps vide
                         override fun onChartGestureStart(me: MotionEvent?, lastPerformedGesture: ChartTouchListener.ChartGesture?) {}
                         override fun onChartGestureEnd(me: MotionEvent?, lastPerformedGesture: ChartTouchListener.ChartGesture?) {}
                         override fun onChartLongPressed(me: MotionEvent?) {}

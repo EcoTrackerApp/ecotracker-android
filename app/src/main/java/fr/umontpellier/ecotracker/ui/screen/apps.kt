@@ -46,7 +46,6 @@ fun Apps() {
                 .weight(2f)
                 .padding(horizontal = 12.dp, vertical = 2.dp),
             shape = RoundedCornerShape(10.dp),
-            //shadowElevation = 4.dp,  // Utilisation de shadowElevation pour l'effet d'élévation
             color = Color.White
         ) {
             PieConsumptionChart(applimit = 10, selectedAppCons = selectedApp)

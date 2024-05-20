@@ -113,7 +113,7 @@ fun Dashboard(
                     }
 
                     Button(
-                        onClick = {pageIndex = if (pageIndex >= 2) 0 else pageIndex + 1},
+                        onClick = { pageIndex = if (pageIndex >= 2) 0 else pageIndex + 1 },
                         modifier = Modifier.weight(1f),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = Color.Transparent,
@@ -134,7 +134,6 @@ fun Dashboard(
                 )
             }
         }
-        // Positionne le bouton en haut à droite
         Row(
             modifier = Modifier.fillMaxSize(),
             horizontalArrangement = Arrangement.End,

@@ -61,7 +61,6 @@ fun PieConsumptionChart(
             .aspectRatio(0.7f)
             .padding(16.dp)
     ) {
-        // Ajouter le PieData à votre PieChart
         AndroidView(
             factory = { context ->
                 PieChart(context).apply {
@@ -69,7 +68,6 @@ fun PieConsumptionChart(
                         day to perApp.map { (app, data) -> app to Bytes(data.total.value) }.toMap()
                     }.toMap()
 
-                    // Créer une liste de PieEntry pour chaque application
                     val pieEntries = monthConsumptionPerApp.values
                         .asSequence()
                         .flatMap { it.entries }
@@ -82,7 +80,6 @@ fun PieConsumptionChart(
                         .take(applimit)
                         .toList()
 
-                    // Créer un PieDataSet à partir de la liste de PieEntry
                     val dataSet = PieDataSet(pieEntries, "Consommation par application")
                     dataSet.colors = listOf(parseColor("#2a89b5"), parseColor("#fcae60")) +
                             ColorTemplate.PASTEL_COLORS.toList() +
@@ -91,7 +88,6 @@ fun PieConsumptionChart(
                     dataSet.valueTextSize = 15F
                     dataSet.sliceSpace = 2f
 
-                    // Set initial ValueFormatter
                     dataSet.valueFormatter = object : ValueFormatter() {
                         override fun getFormattedValue(value: Float): String {
                             val total = pieEntries.sumOf { it.value.toDouble() }
@@ -103,7 +99,6 @@ fun PieConsumptionChart(
                         }
                     }
 
-                    // Créer un PieData à partir du PieDataSet
                     val pieData = PieData(dataSet)
 
                     this.data = pieData
@@ -121,7 +116,6 @@ fun PieConsumptionChart(
                     this.description.isEnabled = false
                     animateXY(1000, 1000)
 
-                    // Ajouter un OnChartValueSelectedListener
                     var showPercentage = false
                     this.setOnChartValueSelectedListener(object : OnChartValueSelectedListener {
                         override fun onValueSelected(e: Entry?, h: Highlight?) {

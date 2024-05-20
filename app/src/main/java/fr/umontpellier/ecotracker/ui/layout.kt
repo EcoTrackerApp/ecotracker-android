@@ -50,7 +50,6 @@ fun EcoTrackerLayout(
 
     LaunchedEffect(pkgNetStartService.cacheJob) {
         pkgNetStartService.cacheJob.invokeOnCompletion {
-            // Refresh UI when job completes
             isLoading = false
         }
     }

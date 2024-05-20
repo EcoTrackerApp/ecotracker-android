@@ -31,7 +31,6 @@ import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 
 private val ecoTrackerModule = module {
-    // Configuration par défaut
     single { EcoTrackerConfig() }
 
     singleOf(::AndroidNetStartService) {
@@ -46,7 +45,6 @@ private val ecoTrackerModule = module {
 }
 
 val ecoTrackerPreviewModule = module {
-    // Configuration par défaut
     single { EcoTrackerConfig() }
 
     singleOf(::DummyPkgNetStatService) {
@@ -90,7 +88,6 @@ class EcoTrackerActivity : ComponentActivity() {
 
         setContent {
             EcoTrackerConfigSaver()
-            // Dessine la barre en bas
             EcoTrackerLayout {
                 UsageAccessDialog {
                     when (it) {
