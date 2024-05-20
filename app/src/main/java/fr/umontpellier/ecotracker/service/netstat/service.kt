@@ -237,8 +237,13 @@ class AndroidNetStartService(private val context: Context, private val config: E
         connections: Array<ConnectionType>
     ): PkgNetStatService.Result {
         val r: MutableMap<Instant, MutableMap<Int, PkgNetStatService.Result.App>> = mutableMapOf()
-        if (end.isBefore(start))
-            throw IllegalArgumentException("Fetching data between an invalid interval $start - $end")
+        var start = start
+        var end = end
+        if (start.isAfter(end)) {
+            val d = start
+            start = end
+            end = d
+        }
 
         val netStat = context.getSystemService(NetworkStatsManager::class.java)
             ?: throw IllegalStateException("NetworkStatsManager")
