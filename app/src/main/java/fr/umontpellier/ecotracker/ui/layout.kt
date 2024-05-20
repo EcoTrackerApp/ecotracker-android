@@ -113,6 +113,7 @@ fun BottomBarIndicator(state: PagerState, id: Int) {
 fun EcoTrackerConfigSaver(
     context: Context = koinInject(),
     config: EcoTrackerConfig = koinInject(),
+    pkgNetStartService: PkgNetStatService = koinInject(),
     lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current
 ) {
     DisposableEffect(lifecycleOwner) {
@@ -131,6 +132,7 @@ fun EcoTrackerConfigSaver(
                     config.precision = fileConfig.precision
                     config.model = fileConfig.model
                     config.apps.putAll(fileConfig.apps)
+                    pkgNetStartService.fetchAndCache()
                 } catch (e: Exception) {
                     Log.e("ecotracker", "Failed to read config $e")
                     e.printStackTrace()
