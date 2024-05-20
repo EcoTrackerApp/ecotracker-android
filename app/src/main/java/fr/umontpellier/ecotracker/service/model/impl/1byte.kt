@@ -7,7 +7,7 @@ import fr.umontpellier.ecotracker.service.netstat.ConnectionType
 import fr.umontpellier.ecotracker.service.netstat.PkgNetStatService
 
 object OneByte : Model {
-    private const val CO2_PER_KWH_IN_DC_GREY = 0.0599
+    private const val CO2_PER_KWH_IN_DC_GREY = 0.42
     private const val CO2_PER_KWH_IN_DC_GREEN = 0.0
 
     private const val KWH_PER_BYTE_IN_DC = 7.2e-11
