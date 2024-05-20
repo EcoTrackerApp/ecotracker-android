@@ -51,7 +51,7 @@ object SustainableWebDesign : Model {
         if (green) {
             return kwHAmount * CARBON_FACTOR_RENEWABLE
         } else
-            return kwHAmount * CARBON_INTENSITY_EUROPE
+            return kwHAmount * CARBON_INTENSITY_GLOBAL
     }
 
 
