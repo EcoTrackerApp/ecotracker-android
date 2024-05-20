@@ -21,7 +21,6 @@ import fr.umontpellier.ecotracker.ui.screen.AppPage
 import fr.umontpellier.ecotracker.ui.screen.Apps
 import fr.umontpellier.ecotracker.ui.screen.Dashboard
 import fr.umontpellier.ecotracker.ui.screen.GlobalChart
-import org.koin.android.ext.android.inject
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 import org.koin.androidx.workmanager.koin.workManagerFactory
@@ -82,9 +81,6 @@ class EcoTrackerActivity : ComponentActivity() {
     @SuppressLint("ComposableDestinationInComposeScope")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        val androidNetStartService by inject<AndroidNetStartService>()
-        androidNetStartService.fetchAndCache()
 
         setContent {
             EcoTrackerConfigSaver()
