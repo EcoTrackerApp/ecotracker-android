@@ -15,6 +15,9 @@ object SustainableWebDesign : Model {
     // Facteur carbone (intensité carbone) en grammes par kilowattheure (g/kWh) (valeur par defaut)
     // TODO: Implementer la localisation
     private const val CARBON_INTENSITY_GLOBAL = 442.0
+    private const val CARBON_INTENSITY_EUROPE = 310.0
+    private const val CARBON_INTENSITY_FRANCE = 71.0
+    //https://ember-climate.org/data/data-tools/data-explorer/
 
     // Émissions de CO2 pour les énergies renouvelables en g/kWh
     private const val CARBON_FACTOR_RENEWABLE = 50.0
